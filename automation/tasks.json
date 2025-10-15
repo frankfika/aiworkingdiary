@@ -11,6 +11,13 @@
       "type": "shell",
       "enabled": true,
       "command": "echo 'Auto worker executed at ' $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+    },
+    {
+      "id": "test_report",
+      "type": "generate_report",
+      "enabled": true,
+      "paths": ["会议记录", "学校方案", "提示词模版"],
+      "out_file": "automation/test_report.md"
     }
   ]
 }

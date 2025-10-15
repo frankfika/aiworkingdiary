@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
+from typing import List
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +45,36 @@ def run_update_timestamp(out_file: str):
     log(f"Updated timestamp file: {out_file}")
 
 
+def run_generate_report(paths: List[str], out_file: str):
+    out_path = ensure_repo_path(out_file)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    lines = []
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    lines.append(f"# Auto Worker Report\n")
+    lines.append(f"Generated at: {ts} (UTC)\n\n")
+    total_files = 0
+    for rel in paths:
+        dir_path = ensure_repo_path(rel)
+        count = 0
+        file_list = []
+        if os.path.isdir(dir_path):
+            for root, _, files in os.walk(dir_path):
+                for fn in files:
+                    count += 1
+                    total_files += 1
+                    file_list.append(os.path.relpath(os.path.join(root, fn), REPO_ROOT))
+        lines.append(f"## {rel} ({count} files)\n")
+        if file_list:
+            for fp in sorted(file_list)[:50]:
+                lines.append(f"- {fp}\n")
+        lines.append("\n")
+
+    lines.append(f"Total files across sections: {total_files}\n")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+    log(f"Generated report: {out_file}")
+
+
 def main():
     log("Starting auto worker")
     tasks = load_tasks()
@@ -59,6 +90,11 @@ def main():
                 run_shell(t.get("command", ""))
             elif ttype == "update_timestamp":
                 run_update_timestamp(t.get("out_file", "automation/last_run.txt"))
+            elif ttype == "generate_report":
+                paths = t.get("paths", [])
+                if not isinstance(paths, list):
+                    paths = []
+                run_generate_report(paths, t.get("out_file", "automation/test_report.md"))
             else:
                 log(f"Unknown task type '{ttype}' for {tid}; skipping")
         except Exception as e:
