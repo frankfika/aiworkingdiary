@@ -22,3 +22,16 @@
 - 所有自动执行都在GitHub的容器内运行，不在本机执行。
 - Shell任务可能带来风险，请确保命令安全且幂等。
 - 如需更高频率或复杂编排，可扩展 `auto_worker.py` 支持更多任务类型与错误重试。
+
+## 在Trae本地自动运行（可选）
+如果你希望在Trae内本地持续执行任务（IDE开启时），可使用守护脚本：
+
+- 启动：
+  - 在仓库根目录运行 `python3 scripts/trae_daemon.py`
+  - 可通过设置环境变量 `INTERVAL_SECONDS` 调整执行间隔（默认900秒）。
+- 日志：
+  - 查看 `automation/trae_daemon.log` 获取运行日志与错误信息。
+- 停止：
+  - 关闭进程或在Trae停止正在运行的命令。
+
+注意：Trae本地守护依赖IDE处于运行状态。如果需要真正“24/7”无IDE、无电脑在线，建议使用上面的 GitHub Actions 定时工作流，或在macOS使用 LaunchAgent 配置系统级定时任务。
