@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "update_timestamp",
+      "type": "update_timestamp",
+      "enabled": true,
+      "out_file": "automation/last_run.txt"
+    },
+    {
+      "id": "echo_message",
+      "type": "shell",
+      "enabled": true,
+      "command": "echo 'Auto worker executed at ' $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+    }
+  ]
+}
