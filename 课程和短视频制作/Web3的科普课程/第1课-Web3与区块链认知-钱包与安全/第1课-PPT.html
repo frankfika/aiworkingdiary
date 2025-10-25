@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1课 Web3与区块链认知 + 钱包与安全</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #000;
+            overflow: hidden;
+            color: #1a1a1a;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .slide-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1920px;
+            max-height: 1080px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: #FFFFFF;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 8%;
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+        }
+
+        /* 标题页 - YC 风格 */
+        .title-slide {
+            justify-content: center;
+            align-items: flex-start;
+            background: #FFFFFF;
+        }
+
+        .title-slide h1 {
+            font-size: 6vw;
+            font-weight: 400;
+            line-height: 1.1;
+            color: #1a1a1a;
+            letter-spacing: -0.03em;
+            margin-bottom: 3vh;
+        }
+
+        .title-slide .subtitle {
+            font-size: 2.2vw;
+            color: #666;
+            margin-top: 2vh;
+            font-weight: 300;
+            letter-spacing: -0.01em;
+        }
+
+        .title-slide .disclaimer {
+            margin-top: auto;
+            font-size: 1vw;
+            color: #999;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* 内容页 - 极简风格 */
+        .content-slide {
+            background: #FFFFFF;
+        }
+
+        .content-slide h2 {
+            font-size: 4vw;
+            font-weight: 400;
+            margin-bottom: 6vh;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .content-slide h3 {
+            font-size: 2vw;
+            font-weight: 500;
+            margin: 3vh 0 2vh 0;
+            color: #1a1a1a;
+            letter-spacing: -0.01em;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            font-size: 1.35vw;
+            line-height: 1.7;
+            color: #4a4a4a;
+            font-weight: 300;
+        }
+
+        .content p {
+            margin: 1.5vh 0;
+            font-weight: 300;
+        }
+
+        .content ul {
+            list-style: none;
+            margin: 2vh 0;
+        }
+
+        .content li {
+            margin: 1.2vh 0;
+            padding-left: 0;
+            position: relative;
+            font-weight: 300;
+            color: #4a4a4a;
+        }
+
+        .content li:before {
+            content: "—";
+            margin-right: 1vw;
+            color: #1a1a1a;
+            font-weight: 300;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4vw;
+            margin: 3vh 0;
+        }
+
+        .card {
+            padding: 0;
+        }
+
+        .card h4 {
+            font-size: 1.8vw;
+            color: #1a1a1a;
+            margin-bottom: 2vh;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .card ul {
+            font-size: 1.25vw;
+        }
+
+        .card p {
+            font-size: 1.25vw;
+            line-height: 1.7;
+            color: #4a4a4a;
+        }
+
+        .highlight {
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        .warning {
+            background: #f8f8f8;
+            padding: 2vh 2vw;
+            margin: 3vh 0;
+            border-radius: 0;
+            font-size: 1.25vw;
+            color: #4a4a4a;
+            font-weight: 300;
+            border-left: 2px solid #1a1a1a;
+        }
+
+        .key-point {
+            background: #fafafa;
+            padding: 3vh 2vw;
+            margin: 3vh 0;
+            border-radius: 0;
+        }
+
+        .key-point h3 {
+            font-size: 1.8vw;
+            color: #1a1a1a;
+            margin-bottom: 2vh;
+            font-weight: 500;
+        }
+
+        /* 导航控制 */
+        .nav {
+            position: fixed;
+            bottom: 2vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1vw;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(26,26,26,0.8);
+            color: #fff;
+            border: none;
+            padding: 1vh 2vw;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 1vw;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #1a1a1a;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 2vh;
+            right: 2vw;
+            color: #999;
+            font-size: 1vw;
+            z-index: 1000;
+        }
+
+        /* 演讲者备注（打印/导出时可见，演示时隐藏） */
+        .speaker-notes {
+            display: none;
+            font-size: 1vw;
+            line-height: 1.5;
+            color: #666;
+            margin-top: 4vh;
+            padding: 2vh 2vw;
+            background: #f6f6f6;
+            border-left: 3px solid #1a1a1a;
+        }
+
+        /* 导出模式：隐藏导航，显示备注 */
+        @media print, speech {
+            .nav, .slide-counter { display: none; }
+            .speaker-notes { display: block; }
+            .slide { page-break-after: always; }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .title-slide h1 { font-size: 8vw; }
+            .title-slide .subtitle { font-size: 3.5vw; }
+            .content-slide h2 { font-size: 5vw; }
+            .content { font-size: 2.2vw; }
+            .nav-btn { font-size: 2vw; padding: 1.5vh 3vw; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <div class="slide-container">
+            <!-- P1 标题页 -->
+            <section class="slide title-slide active">
+                <h1>第1课<br>Web3与区块链认知<br>+ 钱包与安全</h1>
+                <div class="subtitle">签名同意，改变状态</div>
+                <div class="disclaimer">
+                    免责声明：本课程仅为技术与安全教育，不构成任何投资建议。所有演示均在测试网络进行，不涉及真实资产与私钥。
+                </div>
+                <div class="speaker-notes">大家好，欢迎来到这门 Web3 技术与安全课程的第一课。在我们正式开始之前，我需要先把边界和免责声明说清楚：本课程仅供技术学习，不含投资建议，所有演示均在测试网进行，不涉及真实资金。</div>
+            </section>
+
+            <!-- P2 为什么是 Web3 -->
+            <section class="slide content-slide">
+                <h2>为什么是 Web3？</h2>
+                <div class="content">
+                    <p>Web3 让你在<strong class="highlight">没有平台背书</strong>的情况下，证明数字资产属于你。</p>
+                    <ul>
+                        <li>无需客服、无需身份证明，只要私钥签名，链上即承认权利。</li>
+                        <li>规则写进协议，数据公开可查，<strong class="highlight">无人可单方面删改</strong>。</li>
+                        <li>从“平台说了算”到“我的数字权利，由我来定义”。</li>
+                    </ul>
+                    <div class="warning">
+                        案例：Web2 游戏公司可削弱你的装备；Web3 NFT 属性上链，未经你签名不可更改。
+                    </div>
+                </div>
+                <div class="speaker-notes">这一页我们用一个游戏装备的例子来说明 Web3 的价值：在 Web2 里，游戏公司可以削弱你的装备；而在 Web3 里，NFT 的属性写在链上，未经你签名就无法更改，这就是“数字所有权”的核心。</div>
+            </section>
+
+            <!-- P3 数字所有权与状态改变 -->
+            <section class="slide content-slide">
+                <h2>数字所有权与状态改变</h2>
+                <div class="content">
+                    <p>区块链是一台记录“状态”的机器：<strong class="highlight">谁拥有什么、授权给谁、NFT 归谁</strong>。</p>
+                    <ul>
+                        <li>每次交易 = 请求把状态从 A 变到 B，并用私钥签名同意。</li>
+                        <li>状态改变<strong class="highlight">不可逆</strong>，无客服可回滚。</li>
+                    </ul>
+                    <div class="key-point">
+                        <h3>签名前自问三句</h3>
+                        <p>这会改变什么状态？谁会受影响？改变后能否撤销？</p>
+                    </div>
+                </div>
+                <div class="speaker-notes">这一页我们强调“状态”概念：区块链本质上是一台状态机，谁拥有什么、授权给谁、NFT 归谁，都是状态。每次交易就是请求把状态从 A 变到 B，并且必须你用私钥签名同意。记住，状态改变不可逆，签名前务必自问三句：这会改变什么状态？谁会受影响？改变后能否撤销？</div>
+            </section>
+
+            <!-- P4 公钥/私钥/地址关系 -->
+            <section class="slide content-slide">
+                <h2>公钥 / 私钥 / 地址</h2>
+                <div class="content">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>私钥</h4>
+                            <p>256 位随机数 → 万能钥匙<br><strong class="highlight">绝对保密</strong>，泄露即失去所有权。</p>
+                        </div>
+                        <div class="card">
+                            <h4>公钥 / 地址</h4>
+                            <p>可公开，用于验证签名与收款<br>无法反推私钥。</p>
+                        </div>
+                    </div>
+                    <div class="warning">
+                        常见泄露：助记词拍照同步云端、复制粘贴给“客服”、木马记录剪贴板。
+                    </div>
+                    <p class="highlight">守住私钥 = 守住“同意的权利”。</p>
+                </div>
+            </section>
+
+            <!-- P5 账户类型：EOA vs 合约 -->
+            <section class="slide content-slide">
+                <h2>账户类型：EOA vs 合约账户</h2>
+                <div class="content">
+                    <ul>
+                        <li><strong class="highlight">EOA</strong>：私钥控制，可主动发交易，无代码。</li>
+                        <li><strong class="highlight">合约账户</strong>：代码控制，无私钥，需被触发。</li>
+                    </ul>
+                    <div class="warning">
+                        警惕：税率可调、可升级代理、无限 owner 权限 → 项目方可随时改规则卷款。
+                    </div>
+                    <div class="key-point">
+                        <h3>交互前必查</h3>
+                        <p>有无 owner？权限多大？是否可升级？有无时间锁/多签？</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P6 交易结构 from/to/value/data -->
+            <section class="slide content-slide">
+                <h2>交易结构：from / to / value / data</h2>
+                <div class="content">
+                    <p><strong class="highlight">value=0 不代表安全</strong> —— 资产转移常编码在 data 字段。</p>
+                    <ul>
+                        <li>ERC-20 转账：data = transfer(地址, 金额)</li>
+                        <li>授权：data = approve(合约, 额度)</li>
+                    </ul>
+                    <div class="warning">
+                        只看 value 会被误导；务必读懂 data 里调用的函数与参数。
+                    </div>
+                </div>
+            </section>
+
+            <!-- P7 状态改变 vs 事件 Logs -->
+            <section class="slide content-slide">
+                <h2>状态改变 vs 事件 Logs</h2>
+                <div class="content">
+                    <ul>
+                        <li><strong class="highlight">状态</strong>：链上真相，余额、授权、NFT 所有者。</li>
+                        <li><strong class="highlight">事件 Logs</strong>：操作明细，方便前端检索，非状态本身。</li>
+                    </ul>
+                    <p>例：Transfer 事件方便浏览器展示流水，但余额变化已写入状态映射。</p>
+                    <div class="key-point">
+                        <h3>安全视角</h3>
+                        <p>只看事件不够，必须核对状态是否如预期改变。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P8 区块与共识 -->
+            <section class="slide content-slide">
+                <h2>区块与共识：确认 & 最终性</h2>
+                <div class="content">
+                    <ul>
+                        <li>交易被纳入区块 ≠ 最终，<strong class="highlight">可能重组</strong>。</li>
+                        <li>确认数↑ → 重组成本↑，通常 12 块以上视为高概率不可逆。</li>
+                    </ul>
+                    <div class="warning">
+                        案例：CryptoKitties 高峰期，低 Gas 交易等待数十区块才确认。
+                    </div>
+                    <p class="highlight">大额转账 / 关键操作：等待足够确认数再执行下一步。</p>
+                </div>
+            </section>
+
+            <!-- P9 Gas 费用结构 -->
+            <section class="slide content-slide">
+                <h2>Gas 费用结构</h2>
+                <div class="content">
+                    <p>伦敦升级后：<strong class="highlight">GasUsed × (BaseFee + PriorityFee)</strong></p>
+                    <ul>
+                        <li>BaseFee 自动调节，拥堵↑则↑，<strong class="highlight">燃烧销毁</strong>。</li>
+                        <li>PriorityFee（小费）吸引矿工/验证者优先打包。</li>
+                    </ul>
+                    <div class="warning">
+                        NFT 铸造 Gas 战：BaseFee 瞬间飙升 10 倍，未及时调整导致交易卡住。
+                    </div>
+                    <div class="key-point">
+                        <h3>节省技巧</h3>
+                        <p>非紧急交易选低峰时段；钱包支持“最高费用”保护避免超额付费。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P10 nonce 与失败定位 -->
+            <section class="slide content-slide">
+                <h2>nonce 与失败定位</h2>
+                <div class="content">
+                    <ul>
+                        <li><strong class="highlight">nonce 顺序</strong>：必须严格递增，跳号会卡住后续交易。</li>
+                        <li>常见失败：Out-of-Gas（GasLimit 不足）、Revert（合约回滚）。</li>
+                    </ul>
+                    <div class="warning">
+                        案例：复杂 DeFi 交互少设 GasLimit → 交易失败仍烧掉上百美元 BaseFee。
+                    </div>
+                    <div class="key-point">
+                        <h3>排查步骤</h3>
+                        <p>看状态→查 nonce→对比 GasLimit 与实际用量→读 revert 消息。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P11 L1/L2 与链 ID -->
+            <section class="slide content-slide">
+                <h2>L1 / L2 与链 ID</h2>
+                <div class="content">
+                    <ul>
+                        <li><strong class="highlight">链 ID</strong>：防止重放攻击的“网络身份证”，主网 1、Sepolia 11155111。</li>
+                        <li>L2：Rollup 把交易批量写入 L1，降低费用、提高速度。</li>
+                    </ul>
+                    <div class="warning">
+                        2016 年 ETC 分叉后无链 ID 保护 → 交易在主网/ETC 双向重放，用户资产受损。
+                    </div>
+                    <p class="highlight">签名前确认链 ID，避免测试网交易被重放到主网。</p>
+                </div>
+            </section>
+
+            <!-- P12 多链与网络切换 -->
+            <section class="slide content-slide">
+                <h2>多链与网络切换</h2>
+                <div class="content">
+                    <p>同一地址可在多条链存在，但<strong class="highlight">资产、授权、nonce 互不共享</strong>。</p>
+                    <ul>
+                        <li>切换网络 ≠ 资产自动迁移，需跨链桥或手动转账。</li>
+                        <li>RPC 节点故障 → 余额加载不出，换节点即可。</li>
+                    </ul>
+                    <div class="key-point">
+                        <h3>演示计划</h3>
+                        <p>MetaMask 手动添加 Sepolia → 领水 → 查看浏览器状态差异。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P13 托管 vs 自托管 -->
+            <section class="slide content-slide">
+                <h2>托管 vs 自托管</h2>
+                <div class="content">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>交易所托管</h4>
+                            <ul>
+                                <li>私钥由平台保管</li>
+                                <li>可找回密码</li>
+                                <li>合规、客服支持</li>
+                                <li>单点故障、被冻结风险</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h4>自托管</h4>
+                            <ul>
+                                <li>私钥完全自持</li>
+                                <li>无客服、无冻结</li>
+                                <li>自由跨链/DeFi</li>
+                                <li>泄露即永久损失</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="highlight">大额长期 → 自托管 + 硬件钱包；小额交易 → 托管便利。</p>
+                </div>
+            </section>
+
+            <!-- P14 安全备份与最小授权 -->
+            <section class="slide content-slide">
+                <h2>安全备份与最小授权</h2>
+                <div class="content">
+                    <div class="warning">
+                        案例：2021 年 Infinite Approval 漏洞，用户无限授权 DEX 被黑客一次性转空。
+                    </div>
+                    <ul>
+                        <li><strong class="highlight">离线手写</strong>助记词，防火金属板，多地分散。</li>
+                        <li>授权额度 ≤ 所需，用“自定义额度”替代“无限”。</li>
+                        <li>硬件钱包：私钥永不触网，即使电脑中毒也无法读取。</li>
+                    </ul>
+                    <div class="key-point">
+                        <h3>备份清单</h3>
+                        <p>手写 → 密封袋 → 两处异地 → 测试恢复 → 再存大额。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P15 常见钓鱼与假网站识别 -->
+            <section class="slide content-slide">
+                <h2>常见钓鱼与假网站识别</h2>
+                <div class="content">
+                    <ul>
+                        <li>域名拼写陷阱：metamask.io → metarnask.com</li>
+                        <li>谷歌广告置顶：钓鱼站买品牌词，排官网之上。</li>
+                        <li>推特空投链接：伪造“官方支持”引导输入助记词。</li>
+                    </ul>
+                    <div class="warning">
+                        2022 年虚假 OpenSea 邮件 → 用户连接钱包 → 授权“transferFrom”被盗 100+ ETH。
+                    </div>
+                    <div class="key-point">
+                        <h3>三秒自检</h3>
+                        <p>域名拼写 → HTTPS 证书 → 是否要求助记词；书签直达，勿点广告。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P16 轻量演示：添加 Sepolia & 签消息 -->
+            <section class="slide content-slide">
+                <h2>演示：添加 Sepolia 测试网 & 签消息</h2>
+                <div class="content">
+                    <ol>
+                        <li>Chainlist 一键添加 Sepolia，链 ID 11155111</li>
+                        <li>领水 faucet 获取测试 ETH</li>
+                        <li>对比 personal_sign vs EIP-712 结构化签名</li>
+                    </ol>
+                    <div class="warning">
+                        盲签 hex 数据 → 可能签名恶意交易；EIP-712 可读字段降低风险。
+                    </div>
+                    <p class="highlight">现场练习：扫码领水 → 签名 → 浏览器验证。</p>
+                </div>
+            </section>
+
+            <!-- P17 互动问答 -->
+            <section class="slide content-slide">
+                <h2>互动问答</h2>
+                <div class="content">
+                    <ul>
+                        <li>私钥与助记词备份最佳实践？</li>
+                        <li>如何快速判断合约权限风险？</li>
+                        <li>交易卡住 / 失败如何排查？</li>
+                        <li>主网与测试网资产混淆怎么办？</li>
+                    </ul>
+                    <div class="key-point">
+                        <h3>现场提问</h3>
+                        <p>扫码填表 → 实时投票 → 选取高频问题现场解答。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- P18 总结与作业 -->
+            <section class="slide content-slide">
+                <h2>课程总结 & 作业</h2>
+                <div class="content">
+                    <p>核心口诀：<strong class="highlight">签名同意，改变状态</strong></p>
+                    <ul>
+                        <li>备份助记词 → 离线手写 + 异地封存</li>
+                        <li>授权最小化 → 自定义额度，定期 revoke</li>
+                        <li>签名前三问 → 状态/影响/撤销</li>
+                    </ul>
+                    <div class="key-point">
+                        <h3>课后作业</h3>
+                        <p>1. 用 Sepolia 完成一笔转账并查看确认数<br>
+                           2. 检查你常用 dApp 的授权额度并调低<br>
+                           3. 把助记词备份拍照发群里（误）——不要真发！</p>
+                    </div>
+                    <p class="highlight">下节课预告：钱包种类对比 & 硬件钱包实操。</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 导航 & 计数器 -->
+        <div class="nav">
+            <button class="nav-btn" id="prevBtn">← 上一页</button>
+            <button class="nav-btn" id="nextBtn">下一页 →</button>
+        </div>
+        <div class="slide-counter" id="counter">1 / 18</div>
+    </div>
+
+    <script>
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const counter = document.getElementById('counter');
+        let current = 0;
+
+        function showSlide(idx) {
+            document.querySelectorAll('.slide').forEach((s, i) => {
+                s.classList.toggle('active', i === idx);
+            });
+            counter.textContent = `${idx + 1} / ${document.querySelectorAll('.slide').length}`;
+            prevBtn.disabled = idx === 0;
+            nextBtn.disabled = idx === document.querySelectorAll('.slide').length - 1;
+            current = idx;
+        }
+        prevBtn.addEventListener('click', () => {
+            if (current > 0) showSlide(current - 1);
+        });
+        nextBtn.addEventListener('click', () => {
+            if (current < document.querySelectorAll('.slide').length - 1) showSlide(current + 1);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextBtn.click();
+            if (e.key === 'ArrowLeft') prevBtn.click();
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>
+            margin-top: 0;
+            margin-bottom: 1.5vh;
+        }
+
+        .key-point p {
+            font-size: 1.3vw;
+            color: #4a4a4a;
+        }
+
+        .flow-chart {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2vw;
+            margin: 4vh 0;
+        }
+
+        .flow-item {
+            flex: 1;
+            text-align: center;
+            font-size: 1.3vw;
+            color: #1a1a1a;
+            font-weight: 300;
+        }
+
+        .flow-item strong {
+            display: block;
+            font-size: 1.5vw;
+            margin-bottom: 1vh;
+            font-weight: 500;
+        }
+
+        .flow-item small {
+            display: block;
+            font-size: 1.1vw;
+            color: #666;
+            margin-top: 0.5vh;
+            font-weight: 300;
+        }
+
+        .flow-arrow {
+            font-size: 1.5vw;
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .code-block {
+            background: #fafafa;
+            padding: 2vh 2vw;
+            border-radius: 0;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 1.15vw;
+            line-height: 1.8;
+            color: #1a1a1a;
+            margin: 2vh 0;
+            font-weight: 300;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .comparison-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin: 3vh 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .table-cell {
+            padding: 2vh 2vw;
+            font-size: 1.2vw;
+            color: #4a4a4a;
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+            font-weight: 300;
+        }
+
+        .table-cell:nth-child(2n) {
+            border-right: none;
+        }
+
+        .table-cell:nth-last-child(-n+2) {
+            border-bottom: none;
+        }
+
+        .table-header {
+            background: #fafafa;
+            font-weight: 500;
+            font-size: 1.4vw;
+            color: #1a1a1a;
+        }
+
+        /* 导航 - 极简风格 */
+        .navigation {
+            position: fixed;
+            bottom: 4vh;
+            right: 4vw;
+            display: flex;
+            gap: 2vw;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            color: #1a1a1a;
+            padding: 1.2vh 2.5vw;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 1vw;
+            font-weight: 400;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-btn:hover {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 4vh;
+            left: 4vw;
+            font-size: 1vw;
+            color: #999;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+        /* 响应式 */
+        @media (max-aspect-ratio: 16/9) {
+            .slide-container {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        @media (min-aspect-ratio: 16/9) {
+            .slide-container {
+                width: auto;
+                height: 100%;
+            }
+        }
+
+        /* 特殊布局 */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6vw;
+            height: 100%;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .large-number {
+            font-size: 8vw;
+            font-weight: 300;
+            color: #1a1a1a;
+            line-height: 1;
+            margin-bottom: 2vh;
+            letter-spacing: -0.03em;
+        }
+
+        .section-title {
+            font-size: 1.5vw;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 2vh;
+            letter-spacing: -0.01em;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+            margin: 4vh 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <div class="slide-container">
+
+            <!-- Slide 1: 封面 -->
+            <div class="slide active title-slide">
+                <h1>Web3 与区块链认知<br>钱包与安全</h1>
+                <div class="subtitle">签名同意，改变状态</div>
+                <div class="disclaimer">
+                    本课程仅供技术学习，不含投资建议<br>
+                    所有演示均在测试网进行，不涉及真实资金
+                </div>
+            </div>
+
+            <!-- Slide 2: 为什么是 Web3 -->
+            <div class="slide content-slide">
+                <h2>为什么是 Web3？</h2>
+                <div class="content">
+                    <p style="font-size: 1.8vw; margin-bottom: 4vh; color: #1a1a1a; font-weight: 300;">
+                        在没有任何平台背书的情况下<br>证明数字资产属于你
+                    </p>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>Web2 世界</h4>
+                            <ul>
+                                <li>平台控制一切</li>
+                                <li>你只有使用权，没有所有权</li>
+                                <li>账号可能被单方面封禁</li>
+                                <li>平台可以修改规则</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h4>Web3 世界</h4>
+                            <ul>
+                                <li>协议共识，规则透明</li>
+                                <li>你拥有真正的数字所有权</li>
+                                <li>没有人能单方面删除记录</li>
+                                <li>状态改变需要你签名同意</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <p style="font-size: 1.2vw; color: #666;">开放不等于无风险 — 开放意味着自我负责</p>
+                </div>
+            </div>
+
+            <!-- Slide 3: 状态与签名 -->
+            <div class="slide content-slide">
+                <h2>状态与签名</h2>
+                <div class="content">
+                    <p style="font-size: 1.6vw; margin-bottom: 4vh; color: #4a4a4a;">
+                        区块链本质上是一台记录"状态"的机器
+                    </p>
+
+                    <div class="flow-chart">
+                        <div class="flow-item">
+                            <strong>状态 A</strong>
+                            <small>余额: 100</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <strong>交易 + 签名</strong>
+                            <small>转账 10</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <strong>状态 B</strong>
+                            <small>余额: 90</small>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="grid-2">
+                        <div>
+                            <div class="section-title">什么是状态？</div>
+                            <ul>
+                                <li>代币余额</li>
+                                <li>授权额度</li>
+                                <li>NFT 所有权</li>
+                                <li>合约变量</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div class="section-title">关键原则</div>
+                            <p>每次状态改变都需要签名<br>谨慎对待每一次签名弹窗</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 私钥体系 -->
+            <div class="slide content-slide">
+                <h2>私钥体系</h2>
+                <div class="content">
+                    <div class="flow-chart" style="margin-bottom: 6vh;">
+                        <div class="flow-item">
+                            <strong>私钥</strong>
+                            <small>256位随机数</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <strong>公钥</strong>
+                            <small>椭圆曲线推导</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <strong>地址</strong>
+                            <small>哈希运算</small>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>私钥</h4>
+                            <p>
+                                万能钥匙，绝对保密<br>
+                                用于签名，证明身份<br>
+                                谁掌握私钥，谁控制资产
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <h4>公钥与地址</h4>
+                            <p>
+                                公钥可以公开，用于验证签名<br>
+                                地址是公钥的简化版本<br>
+                                从地址无法反推私钥
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <p style="font-size: 1.2vw; color: #666;">
+                        私钥安全：纸笔手写 · 分散备份 · 不拍照不截图 · 不通过聊天工具发送
+                    </p>
+                </div>
+            </div>
+
+            <!-- Slide 5: 账户类型 -->
+            <div class="slide content-slide">
+                <h2>两种账户</h2>
+                <div class="content">
+                    <div class="comparison-table">
+                        <div class="table-cell table-header">EOA（外部账户）</div>
+                        <div class="table-cell table-header">合约账户</div>
+                        <div class="table-cell">由私钥控制</div>
+                        <div class="table-cell">由代码控制</div>
+                        <div class="table-cell">可以主动发起交易</div>
+                        <div class="table-cell">只能被触发执行</div>
+                        <div class="table-cell">你决定何时操作</div>
+                        <div class="table-cell">行为由代码决定</div>
+                        <div class="table-cell">MetaMask · 硬件钱包</div>
+                        <div class="table-cell">代币 · NFT · DeFi</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">与合约交互前的三个问题</div>
+                    <ul>
+                        <li>谁能改变这个合约的关键参数？（Owner 权限）</li>
+                        <li>合约是不是可升级的？（Proxy 模式）</li>
+                        <li>有没有时间锁或多签保护？</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Slide 6: 交易结构 -->
+            <div class="slide content-slide">
+                <h2>交易结构</h2>
+                <div class="content">
+                    <div class="grid-2" style="margin-bottom: 4vh;">
+                        <div class="card">
+                            <h4>from</h4>
+                            <p>发起者地址<br>需要足够余额支付 Gas</p>
+                        </div>
+                        <div class="card">
+                            <h4>to</h4>
+                            <p>接收者地址<br>可以是 EOA 或合约</p>
+                        </div>
+                        <div class="card">
+                            <h4>value</h4>
+                            <p>附带的 ETH 金额<br>单位：wei</p>
+                        </div>
+                        <div class="card">
+                            <h4>data</h4>
+                            <p>调用数据（最关键）<br>包含函数和参数</p>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>重要：</strong>value=0 不代表安全。ERC-20 代币转账的 value 就是 0，真正的金额在 data 字段中
+                    </div>
+
+                    <div class="code-block">
+to: USDC合约地址<br>
+value: 0<br>
+data: transfer(接收地址, 100000000)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Gas -->
+            <div class="slide content-slide">
+                <h2>Gas 费用</h2>
+                <div class="content">
+                    <p style="font-size: 1.6vw; margin-bottom: 4vh; color: #1a1a1a;">
+                        总费用 = (Base Fee + Priority Fee) × Gas Used
+                    </p>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>Base Fee</h4>
+                            <p>
+                                网络动态调整<br>
+                                拥堵时上升，空闲时下降<br>
+                                会被销毁（burn）
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <h4>Priority Fee</h4>
+                            <p>
+                                小费，给验证者<br>
+                                用于加速打包<br>
+                                归验证者所有
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">优化策略</div>
+                    <div class="grid-2">
+                        <ul>
+                            <li>选择低峰时段</li>
+                            <li>批量操作</li>
+                        </ul>
+                        <ul>
+                            <li>使用 Layer 2</li>
+                            <li>合理设置优先费</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: 托管 -->
+            <div class="slide content-slide">
+                <h2>托管 vs 自托管</h2>
+                <div class="content">
+                    <div class="comparison-table">
+                        <div class="table-cell table-header">托管（Custodial）</div>
+                        <div class="table-cell table-header">自托管（Self-Custodial）</div>
+                        <div class="table-cell">
+                            体验友好 · 可找回密码 · 有客服支持
+                        </div>
+                        <div class="table-cell">
+                            真正拥有资产 · 无需许可 · 抗审查
+                        </div>
+                        <div class="table-cell">
+                            不是真正拥有 · 平台风险
+                        </div>
+                        <div class="table-cell">
+                            责任全在自己 · 私钥丢失无法找回
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">分层配置建议</div>
+                    <ul>
+                        <li>大额长期持有：硬件钱包冷存（80%）</li>
+                        <li>中等金额高频交易：热钱包 MetaMask（15%）</li>
+                        <li>小额法币出入金：交易所托管（5%）</li>
+                    </ul>
+
+                    <div style="margin-top: 3vh;">
+                        <p style="font-size: 1.2vw; color: #666;">Not your keys, not your coins</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: 备份 -->
+            <div class="slide content-slide">
+                <h2>安全备份</h2>
+                <div class="content">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>正确做法</h4>
+                            <ul>
+                                <li>纸笔手写，离线记录</li>
+                                <li>制作 2-3 份备份</li>
+                                <li>分散存放不同位置</li>
+                                <li>防火防水密封保存</li>
+                                <li>测试恢复确认正确</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h4>危险操作</h4>
+                            <ul>
+                                <li>拍照存相册</li>
+                                <li>保存在备忘录或云端</li>
+                                <li>通过聊天工具发送</li>
+                                <li>只记一份</li>
+                                <li>从未测试恢复</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">最小授权原则</div>
+                    <ul>
+                        <li>拒绝无限授权，只给必要额度</li>
+                        <li>操作完成后撤销授权</li>
+                        <li>定期审查授权列表（revoke.cash）</li>
+                        <li>检查合约是否可信</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Slide 10: 钓鱼 -->
+            <div class="slide content-slide">
+                <h2>钓鱼识别</h2>
+                <div class="content">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>URL 检查</h4>
+                            <div class="code-block">
+✓ uniswap.org<br>
+✗ unisvvap.org<br>
+✗ uniswap.io<br>
+✗ unɪswap.org
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h4>行为识别</h4>
+                            <ul>
+                                <li>自动弹出钱包连接</li>
+                                <li>要求输入助记词</li>
+                                <li>"限时空投"倒计时</li>
+                                <li>要求支付"激活费"</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="section-title">签名前检查清单</div>
+                    <div class="grid-2">
+                        <ul>
+                            <li>URL 是否正确？</li>
+                            <li>网络是否正确？</li>
+                            <li>会改变什么状态？</li>
+                        </ul>
+                        <ul>
+                            <li>合约是否可信？</li>
+                            <li>授权额度是否合理？</li>
+                            <li>看不懂，一律拒绝</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 11: 总结 -->
+            <div class="slide content-slide">
+                <h2>课程总结</h2>
+                <div class="content">
+                    <p style="font-size: 2.5vw; margin-bottom: 6vh; color: #1a1a1a; font-weight: 300;">
+                        签名同意，改变状态
+                    </p>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4>今天学到的</h4>
+                            <ul>
+                                <li>数字所有权的本质</li>
+                                <li>私钥体系与安全</li>
+                                <li>交易结构与状态改变</li>
+                                <li>Gas 机制与优化</li>
+                                <li>托管与自托管选择</li>
+                                <li>备份与授权管理</li>
+                                <li>钓鱼识别与防范</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h4>课后作业</h4>
+                            <p style="margin-bottom: 2vh;">写 300-500 字学习感想：</p>
+                            <ul>
+                                <li>印象最深的概念</li>
+                                <li>复述案例来龙去脉</li>
+                                <li>如何避免风险</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <p style="font-size: 1.2vw; color: #666; text-align: center;">
+                        在 Web3 世界，安全不是一次性设置，而是每次操作前的习惯
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" onclick="prevSlide()">Previous</button>
+        <button class="nav-btn" onclick="nextSlide()">Next</button>
+    </div>
+
+    <div class="slide-counter">
+            <span id="current-slide">01</span> / <span id="total-slides">11</span>
+        </div>
+        <div class="top-bar">
+            <button id="theme-toggle" class="nav-btn">🌙</button>
+            <button id="download-btn" class="nav-btn">⬇ PPT</button>
+        </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = String(totalSlides).padStart(2, '0');
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = String(currentSlide + 1).padStart(2, '0');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        });
+
+        // 暗色模式
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            themeBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        });
+
+        // 下载 PPT（调用后端脚本）
+        document.getElementById('download-btn').addEventListener('click', () => {
+            fetch('/download-ppt')
+              .then(r => r.blob())
+              .then(blob => {
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = '第1课-Web3钱包与安全.pptx';
+                  a.click();
+              });
+        });
+    </script>
+</body>
+</html>
