@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A & x402 Protocol - 完整版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #faf8f3;
+            --text-primary: #2c3e50;
+            --text-secondary: #6b7280;
+            --accent: #5b9bd5;
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Presentation容器 */
+        .presentation {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 幻灯片 */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 1s var(--transition);
+            padding: 30px 50px;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            transform: scale(0.95);
+        }
+
+        /* 使内容自适应缩放 */
+        .slide-content > * {
+            flex-shrink: 1;
+        }
+
+        /* 进度指示器 */
+        .progress-indicator {
+            position: fixed;
+            top: 60px;
+            right: 80px;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            z-index: 1000;
+            letter-spacing: 0.5px;
+        }
+
+        /* 导航 */
+        .nav-hint {
+            position: fixed;
+            bottom: 60px;
+            right: 80px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            z-index: 1000;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        /* 标题 */
+        h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            letter-spacing: -2px;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 300;
+        }
+
+        /* 手写体样式 */
+        .handwriting {
+            font-family: 'Caveat', cursive;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .handwriting-note {
+            font-family: 'Kalam', cursive;
+            font-size: 17px;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            margin-top: 16px;
+        }
+
+        /* 大标题样式 */
+        .big-text {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        /* 小标题 */
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        /* 数字大标题 */
+        .number-hero {
+            font-size: 120px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--accent);
+            margin-bottom: 25px;
+            letter-spacing: -6px;
+        }
+
+        /* 强调文本 */
+        .highlight-text {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 列表 */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            font-weight: 300;
+        }
+
+        ul li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 400;
+        }
+
+        /* 特性卡片 - 极简风格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-item {
+            border-top: 3px solid var(--accent);
+            padding-top: 14px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 14px 12px 12px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-item h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .feature-item p {
+            font-size: 12px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin: 0;
+        }
+
+        /* 统计数据 */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
+            gap: 25px;
+        }
+
+        .stat-block {
+            flex: 1;
+            border-top: 2px solid var(--accent);
+            padding-top: 12px;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        /* 时间线 */
+        .timeline {
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 18px;
+            align-items: flex-start;
+            padding-bottom: 18px;
+            border-bottom: 2px dashed rgba(91, 155, 213, 0.2);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-year {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            min-width: 80px;
+            letter-spacing: -1.5px;
+        }
+
+        .timeline-content h4 {
+            font-size: 16px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .timeline-content p {
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* 两栏布局 */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* 大引用 */
+        .quote {
+            font-size: 20px;
+            font-weight: 300;
+            line-height: 1.3;
+            color: var(--text-primary);
+            margin: 20px 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* 标签 */
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .tag {
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 代码块 */
+        .code {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid var(--text-primary);
+            border-radius: 14px;
+            padding: 28px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin: 30px 0;
+            font-weight: 400;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .code-highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 封面页 */
+        .cover {
+            text-align: center;
+        }
+
+        .cover h1 {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        .cover .subtitle {
+            font-size: 17px;
+            margin-bottom: 25px;
+        }
+
+        .cover .date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 30px;
+            font-weight: 400;
+            letter-spacing: 0.8px;
+        }
+
+        /* Logo */
+        .logo {
+            position: fixed;
+            top: 60px;
+            left: 80px;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 1000;
+            letter-spacing: -0.5px;
+        }
+
+        /* 强调盒子 */
+        .emphasis-box {
+            background: rgba(255, 255, 255, 0.7);
+            border-left: 4px solid var(--accent);
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .emphasis-box p {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin: 0;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .emphasis-box h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* 键盘控制 */
+        .keyboard-control {
+            position: fixed;
+            bottom: 60px;
+            left: 80px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            z-index: 1000;
+        }
+
+        .keyboard-control kbd {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--accent);
+            border-radius: 6px;
+            font-family: 'SF Mono', monospace;
+            font-size: 11px;
+            margin: 0 4px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* 分隔线 */
+        .divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--accent), transparent);
+            margin: 25px 0;
+            opacity: 0.3;
+        }
+
+        /* 小标记 */
+        .label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            padding: 5px 14px;
+            background: rgba(91, 155, 213, 0.1);
+            border-radius: 14px;
+        }
+
+        /* 全屏按钮 */
+        .fullscreen-btn {
+            position: fixed;
+            top: 60px;
+            right: 140px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* SVG图表样式 */
+        .diagram {
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 图片样式 */
+        .screenshot {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            margin: 25px 0;
+            border: 2px solid rgba(91, 155, 213, 0.2);
+        }
+
+        .screenshot-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .screenshot-caption {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            font-style: italic;
+        }
+
+        /* 视频样式 */
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 25px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            border: 2px solid rgba(91, 155, 213, 0.2);
+        }
+
+        .video-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-width: 960px; 
+        }
+
+        /* 案例卡片 */
+        .case-study {
+            background: rgba(255, 255, 255, 0.7);
+            border-left: 4px solid var(--accent);
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .case-study h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .case-study p {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .case-study .case-highlight {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 8px;
+        }
+
+        /* 流程图节点 - 手绘风格 */
+        .flow-node {
+            display: inline-block;
+            padding: 16px 32px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 500;
+            text-align: center;
+            margin: 8px;
+            min-width: 160px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .flow-node::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            opacity: 0.3;
+        }
+
+        .flow-arrow {
+            font-size: 28px;
+            color: var(--accent);
+            margin: 0 16px;
+        }
+
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        /* 注释标记 */
+        .annotation {
+            font-family: 'Caveat', cursive;
+            font-size: 20px;
+            color: var(--accent);
+            position: relative;
+            display: inline-block;
+            padding: 8px 16px;
+        }
+
+        .annotation::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            animation: underline 1s ease-out forwards;
+        }
+
+        @keyframes underline {
+            to {
+                transform: scaleX(1);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .slide { padding: 80px 60px; }
+            h1 { font-size: 72px; }
+            h2 { font-size: 56px; }
+            .big-text { font-size: 42px; }
+            .feature-grid { grid-template-columns: 1fr; gap: 40px; }
+            .two-col { grid-template-columns: 1fr; gap: 60px; }
+            .stats-row { flex-direction: column; gap: 40px; }
+            .flow-container { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); margin: 20px 0; }
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 60px 40px; }
+            h1 { font-size: 56px; }
+            h2 { font-size: 42px; }
+            .big-text { font-size: 32px; }
+            p { font-size: 18px; }
+            ul li { font-size: 20px; }
+            .stat-number { font-size: 64px; }
+            .timeline-year { font-size: 56px; min-width: 120px; }
+            .quote { font-size: 32px; }
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.8s var(--transition) forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo -->
+    <div class="logo">弗兰克的思维导图</div>
+
+    <!-- 全屏按钮 -->
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+
+    <!-- 进度指示器 -->
+    <div class="progress-indicator" id="progress">1 / 28</div>
+
+    <!-- Presentation -->
+    <div class="presentation" id="presentation">
+
+        <!-- Slide 1: Cover -->
+        <div class="slide active">
+            <div class="slide-content cover">
+                <h1 class="animate" style="font-size: 52px; margin-bottom: 15px;">AP2 & x402协议</h1>
+                <p class="subtitle animate" style="font-size: 15px; margin-bottom: 25px;">Autonomous Payments for AI Agents</p>
+                <p class="handwriting-note animate" style="font-size: 20px; margin-top: 30px;">让AI真正实现自主支付的革命性协议</p>
+                <p class="date animate" style="margin-top: 30px;">2025.10</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">THE PROBLEM</div>
+                <h2 style="font-size: 34px; margin-bottom: 15px;">为什么需要AP2?</h2>
+                <p class="big-text" style="font-size: 22px; margin-bottom: 15px;">想象一下:你让AI助手帮你订一杯咖啡,<span class="highlight-text">如何证明这真的是你授权的</span>,而不是AI自作主张?</p>
+                <div class="divider" style="margin: 20px 0;"></div>
+                <div class="two-col" style="gap: 30px;">
+                    <div>
+                        <ul style="padding-left: 25px;">
+                            <li style="font-size: 14px; margin-bottom: 8px;">如何证明用户确实授权了支付?</li>
+                            <li style="font-size: 14px; margin-bottom: 8px;">商家如何确认请求的真实性?</li>
+                            <li style="font-size: 14px;">发生纠纷时,责任如何界定?</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="emphasis-box" style="padding: 16px;">
+                            <p class="handwriting" style="font-size: 18px; margin: 0;">
+                                就像你给朋友代付款,总要有个"我确认"的环节,不然怎么知道是不是你本人同意的呢? 🤔
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Gap -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="two-col">
+                    <div>
+                        <h2>现有困境</h2>
+                        <p>传统Agent系统在"支付"环节总是需要人工介入。</p>
+                        <p class="handwriting" style="font-size: 36px; margin-top: 40px;">这严重限制了AI Agent的自主性!</p>
+                    </div>
+                    <div>
+                        <div class="emphasis-box">
+                            <p>AI可以做很多事:<br>
+                            ✓ 搜索商品<br>
+                            ✓ 比较价格<br>
+                            ✓ 创建订单<br>
+                            <span class="highlight-text">✗ 自主完成支付</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Solution -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">THE SOLUTION</div>
+                <h2>Agent Payments Protocol</h2>
+                <p class="big-text">Google推出的AI Agent<span class="highlight-text">开放支付协议</span></p>
+                <div class="stats-row">
+                    <div class="stat-block">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">合作伙伴</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">开源协议</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">2025.09</div>
+                        <div class="stat-label">最新发布</div>
+                    </div>
+                </div>
+                <div class="tag-list">
+                    <span class="tag">PayPal</span>
+                    <span class="tag">Coinbase</span>
+                    <span class="tag">Google</span>
+                    <span class="tag">Mastercard</span>
+                    <span class="tag">Visa</span>
+                    <span class="tag">Meta</span>
+                    <span class="tag">American Express</span>
+                    <span class="tag">Salesforce</span>
+                </div>
+                <p class="handwriting" style="font-size: 28px; text-align: center; margin-top: 40px; color: var(--accent);">
+                    这是Google、PayPal等巨头的联合行动! 🌟
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 4.5: Google官网截图 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label" style="margin-bottom: 8px;">OFFICIAL ANNOUNCEMENT</div>
+                <h2 style="font-size: 28px; margin-bottom: 6px;">Google官方发布</h2>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 8px;">Google Cloud官方博客宣布AP2协议</p>
+                <div class="screenshot-container" style="margin: 8px 0;">
+                    <img src="./截图/ap2谷歌官网截图.png" alt="Google AP2官网截图" class="screenshot" style="margin: 8px 0; max-width: 85%; max-height: 400px; object-fit: contain;">
+                    <p class="screenshot-caption handwriting" style="font-size: 13px; color: var(--accent); margin-top: 6px;">
+                        Powering AI commerce with the new Agent Payments Protocol (AP2) 🚀
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4.6: 合作伙伴生态 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">ECOSYSTEM</div>
+                <h2>生态合作伙伴</h2>
+                <p class="subtitle">超过60家全球顶级公司加入AP2生态</p>
+                <div class="screenshot-container">
+                    <img src="./截图/ap2合作伙伴截图.png" alt="AP2合作伙伴" class="screenshot">
+                </div>
+                <div class="two-col" style="margin-top: 40px;">
+                    <div class="case-study">
+                        <h4>🏦 金融支付</h4>
+                        <p>PayPal, Mastercard, American Express, Visa等传统支付巨头</p>
+                    </div>
+                    <div class="case-study">
+                        <h4>🌐 科技平台</h4>
+                        <p>Coinbase, Ethereum Foundation, Cloudflare, Salesforce等Web3先锋</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: What is AP2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">DEEP DIVE</div>
+                <h2 style="font-size: 32px; margin-bottom: 10px;">AP2到底是什么?</h2>
+                <p class="subtitle" style="font-size: 13px; margin-bottom: 10px;">一个让AI Agent能安全、可信地完成支付的开放标准</p>
+                <div class="divider" style="margin: 12px 0;"></div>
+                <div class="two-col" style="gap: 20px;">
+                    <div>
+                        <h3 style="margin-bottom: 8px; color: var(--accent); font-size: 16px;">核心问题</h3>
+                        <div class="emphasis-box" style="padding: 10px; margin: 8px 0;">
+                            <p style="font-size: 11px; margin-bottom: 6px;">当你的AI助手说"我已经帮你下单了"时:</p>
+                            <ul style="margin: 0; padding-left: 16px;">
+                                <li style="font-size: 10px; margin-bottom: 3px;">🤔 这真的是你要的商品吗?</li>
+                                <li style="font-size: 10px; margin-bottom: 3px;">💰 价格是你同意的吗?</li>
+                                <li style="font-size: 10px;">📝 出问题找谁负责?</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; color: var(--accent); font-size: 16px;">AP2的答案</h3>
+                        <div class="feature-item" style="margin: 0; padding: 10px;">
+                            <h4 style="font-size: 13px; margin-bottom: 3px;">🔐 加密授权书(Mandates)</h4>
+                            <p style="margin-bottom: 6px; font-size: 11px;">每一步都有你的数字签名</p>
+
+                            <h4 style="font-size: 13px; margin-bottom: 3px;">📋 完整审计链</h4>
+                            <p style="margin-bottom: 6px; font-size: 11px;">从意图到支付全程可追溯</p>
+
+                            <h4 style="font-size: 13px; margin-bottom: 3px;">🔒 角色分离</h4>
+                            <p style="margin: 0; font-size: 11px;">AI从不接触你的支付信息</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 14px; text-align: center; margin-top: 12px; color: var(--accent);">
+                    就像给AI助手一张"授权支票",用多少、怎么用,你说了算! ✍️
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 6: A2A Protocol -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">FOUNDATION</div>
+                <h2 style="font-size: 32px; margin-bottom: 10px;">A2A协议 (Agent2Agent)</h2>
+                <p class="subtitle" style="font-size: 13px; margin-bottom: 10px;">Google发布的AI Agent通信标准 - AP2的基础协议</p>
+                <div class="divider" style="margin: 12px 0;"></div>
+                <div class="feature-grid" style="gap: 12px;">
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">🤝 Agent间协作</h3>
+                        <p style="font-size: 11px;">让不同公司的AI Agent能互相沟通和协作,就像人与人之间发邮件一样简单</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">📡 统一通信标准</h3>
+                        <p style="font-size: 11px;">定义了Agent如何发现彼此、如何交换信息、如何理解对方的意图</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">🔗 开放互联</h3>
+                        <p style="font-size: 11px;">支持跨平台、跨生态的Agent协作,打破AI孤岛</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">🛡️ 安全可信</h3>
+                        <p style="font-size: 11px;">内置身份验证和权限管理,确保Agent间通信的安全性</p>
+                    </div>
+                </div>
+                <div class="emphasis-box" style="margin-top: 12px; padding: 10px;">
+                    <p style="font-size: 12px; margin: 0;">
+                        <strong>关系链:</strong> A2A让Agent能对话 → AP2让Agent能交易 → x402让Agent能用加密货币支付
+                    </p>
+                </div>
+                <p class="handwriting" style="font-size: 14px; text-align: center; margin-top: 12px; color: var(--accent);">
+                    就像给AI们建了一个"微信群",现在还能发红包了! 💬
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 6.5: A2A x402官网 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">A2A x402 EXTENSION</div>
+                <h2>A2A x402扩展</h2>
+                <p class="subtitle">Google官方文档:"Support for emerging payments systems"</p>
+                <div class="screenshot-container">
+                    <img src="./截图/a2a*402官网截图.png" alt="A2A x402官网" class="screenshot">
+                </div>
+                <div class="emphasis-box" style="margin-top: 30px;">
+                    <p style="font-size: 20px; margin: 0;">
+                        <strong>核心创新:</strong> "AP2 is designed as a universal protocol, providing security and trust for a variety of payments like <span class="highlight-text">stablecoins and cryptocurrencies</span>. To accelerate support for the web3 ecosystem, in collaboration with Coinbase, Ethereum Foundation, MetaMask and other leading organizations, we have extended the core constructs of AP2 and launched the A2A x402 extension."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Core Features -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">FEATURES</div>
+                <h2>核心特性</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>开放互联</h3>
+                        <p>支持不同生态系统的Agent安全沟通和协作</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>用户控制</h3>
+                        <p>用户始终掌握主动权,保护隐私安全</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>可验证意图</h3>
+                        <p>每个操作都有加密签名,无AI猜测</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>清晰问责</h3>
+                        <p>完整的审计追溯链,责任明确</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Mandates Diagram -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">CORE MECHANISM</div>
+                <h2>授权书 (Mandates)</h2>
+                <p class="subtitle">防篡改、带有加密签名的数字合同</p>
+                <div class="flow-container">
+                    <div class="flow-node">
+                        <div style="font-size: 48px; margin-bottom: 10px;">1️⃣</div>
+                        <strong>意图授权书</strong><br>
+                        <small style="color: var(--text-secondary);">Intent Mandate</small>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">
+                        <div style="font-size: 48px; margin-bottom: 10px;">2️⃣</div>
+                        <strong>购物车授权书</strong><br>
+                        <small style="color: var(--text-secondary);">Cart Mandate</small>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">
+                        <div style="font-size: 48px; margin-bottom: 10px;">3️⃣</div>
+                        <strong>支付授权书</strong><br>
+                        <small style="color: var(--text-secondary);">Payment Mandate</small>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 32px; text-align: center; margin-top: 60px;">
+                    每一步都有加密签名,形成完整的信任链! ✨
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 7: Mandates Details -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">MANDATES IN DETAIL</div>
+                <h2>授权书详解</h2>
+                <p class="subtitle">像网购一样的三步确认,但全程加密可追溯!</p>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">01</div>
+                        <div class="timeline-content">
+                            <h4>意图授权书 Intent Mandate</h4>
+                            <p style="font-size: 20px; margin-bottom: 12px;">记录用户最初的购买意图和要求,防止AI随意更改目标</p>
+                            <div style="background: rgba(255,255,255,0.6); padding: 20px; border-radius: 12px; margin-top: 16px;">
+                                <p class="handwriting" style="font-size: 24px; margin: 0; color: var(--accent);">
+                                    💬 "帮我买一双跑步鞋,预算500元以内,要耐克或阿迪品牌"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">02</div>
+                        <div class="timeline-content">
+                            <h4>购物车授权书 Cart Mandate</h4>
+                            <p style="font-size: 20px; margin-bottom: 12px;">创建关于具体商品、价格和条款的不可更改记录</p>
+                            <div style="background: rgba(255,255,255,0.6); padding: 20px; border-radius: 12px; margin-top: 16px;">
+                                <p class="handwriting" style="font-size: 24px; margin: 0; color: var(--accent);">
+                                    ✅ 用户确认: "耐克飞马40跑鞋,码数42,¥459,同意购买"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">03</div>
+                        <div class="timeline-content">
+                            <h4>支付授权书 Payment Mandate</h4>
+                            <p style="font-size: 20px; margin-bottom: 12px;">告诉支付网络这笔交易由AI代理,但已获用户授权</p>
+                            <div style="background: rgba(255,255,255,0.6); padding: 20px; border-radius: 12px; margin-top: 16px;">
+                                <p class="handwriting" style="font-size: 24px; margin: 0; color: var(--text-primary);">
+                                    🏦 银行知道: "这是经过授权的AI代理支付,有完整签名链"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Security -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">SECURITY</div>
+                <h2>安全保障</h2>
+                <p class="big-text">基于<span class="highlight-text">角色分离</span>和<span class="highlight-text">加密签名</span></p>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>AI从不碰敏感数据</h3>
+                        <p>购物智能体从不处理信用卡号或密码</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>专业机构管理凭证</h3>
+                        <p>PayPal等专业机构管理用户凭证</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>密码学签名</h3>
+                        <p>篡改即失效,从根本上防止欺诈</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>透明审计</h3>
+                        <p>清晰的加密审计记录,责任可追溯</p>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 28px; text-align: center; margin-top: 40px;">
+                    就像现实中的合同,签名后不可篡改! 🔒
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 9: x402 Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">CRYPTO REVOLUTION</div>
+                <h2 style="font-size: 32px; margin-bottom: 10px;">x402 协议</h2>
+                <p class="quote" style="font-size: 16px; margin: 15px 0;">复活HTTP 402状态码,让AI Agent实现<span class="highlight-text">200毫秒</span>快速结算!</p>
+                <div class="divider" style="margin: 15px 0;"></div>
+                <div class="feature-grid" style="gap: 12px;">
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">⚡ 极速结算</h3>
+                        <p style="font-size: 11px;">使用USDC/USDT稳定币,结算时间200毫秒,传统银行需要2-3个工作日</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">💰 零协议费用</h3>
+                        <p style="font-size: 11px;">没有传统支付网络的2-3%手续费,仅需极低的Gas费</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">🌐 无需许可</h3>
+                        <p style="font-size: 11px;">AI Agent无需银行账户,不受地理和时间限制,24/7全球可用</p>
+                    </div>
+                    <div class="feature-item" style="padding: 10px;">
+                        <h3 style="font-size: 14px; margin-bottom: 5px;">🔗 标准化协议</h3>
+                        <p style="font-size: 11px;">基于HTTP 402状态码,任何支持HTTP的系统都能集成</p>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 15px; text-align: center; margin-top: 15px; color: var(--accent);">
+                    这是Web3与AI的完美结合! 🚀
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 10: x402 Workflow Diagram -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">x402 WORKFLOW</div>
+                <h2>x402工作流程</h2>
+                <div class="diagram">
+                    <svg width="1000" height="400" viewBox="0 0 1000 400">
+                        <!-- Agent -->
+                        <rect x="50" y="150" width="150" height="100" fill="rgba(255,255,255,0.8)" stroke="#2c3e50" stroke-width="3" rx="15"/>
+                        <text x="125" y="200" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="600">AI Agent</text>
+
+                        <!-- Arrow 1 -->
+                        <path d="M 200 200 L 280 200" stroke="#5b9bd5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="240" y="190" text-anchor="middle" fill="#6b7280" font-size="14">请求API</text>
+
+                        <!-- Server -->
+                        <rect x="280" y="150" width="150" height="100" fill="rgba(255,255,255,0.8)" stroke="#2c3e50" stroke-width="3" rx="15"/>
+                        <text x="355" y="195" text-anchor="middle" fill="#2c3e50" font-size="20" font-weight="600">API服务器</text>
+                        <text x="355" y="220" text-anchor="middle" fill="#5b9bd5" font-size="16" font-weight="600">HTTP 402</text>
+
+                        <!-- Arrow 2 -->
+                        <path d="M 430 180 L 510 180" stroke="#5b9bd5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="470" y="170" text-anchor="middle" fill="#6b7280" font-size="14">支付指令</text>
+
+                        <!-- Payment -->
+                        <rect x="510" y="130" width="150" height="100" fill="rgba(91,155,213,0.1)" stroke="#5b9bd5" stroke-width="3" rx="15"/>
+                        <text x="585" y="175" text-anchor="middle" fill="#2c3e50" font-size="18" font-weight="600">稳定币支付</text>
+                        <text x="585" y="200" text-anchor="middle" fill="#6b7280" font-size="14">(USDC/USDT)</text>
+
+                        <!-- Arrow 3 -->
+                        <path d="M 660 180 L 740 180" stroke="#5b9bd5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="700" y="170" text-anchor="middle" fill="#6b7280" font-size="14">200ms确认</text>
+
+                        <!-- Success -->
+                        <rect x="740" y="130" width="150" height="100" fill="rgba(91,155,213,0.15)" stroke="#5b9bd5" stroke-width="3" rx="15"/>
+                        <text x="815" y="180" text-anchor="middle" fill="#5b9bd5" font-size="32" font-weight="700">✓</text>
+                        <text x="815" y="210" text-anchor="middle" fill="#2c3e50" font-size="16" font-weight="600">获得服务</text>
+
+                        <!-- Arrow marker -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#5b9bd5" />
+                            </marker>
+                        </defs>
+
+                        <!-- Time annotation -->
+                        <text x="500" y="350" text-anchor="middle" fill="#5b9bd5" font-size="32" font-family="Caveat" font-weight="600">
+                            全程仅需200毫秒,完全自动化! ⚡
+                        </text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: x402 Foundation -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">x402 FOUNDATION</div>
+                <h2>x402基金会</h2>
+                <p class="big-text">Cloudflare和Coinbase联合成立x402基金会</p>
+                <div class="divider"></div>
+                <p>推动成为开放的互联网支付标准</p>
+                <div class="tag-list">
+                    <span class="tag">Google</span>
+                    <span class="tag">AWS</span>
+                    <span class="tag">Anthropic</span>
+                    <span class="tag">Visa</span>
+                    <span class="tag">Ethereum Foundation</span>
+                    <span class="tag">MetaMask</span>
+                </div>
+                <p class="handwriting-note" style="text-align: center; margin-top: 60px;">
+                    科技巨头的集体背书,这是真正的范式转移! 🌟
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 11.5: x402官网与GitHub -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">OPEN SOURCE</div>
+                <h2>x402开源项目</h2>
+                <p class="subtitle">298 Stars · 58 Forks · 活跃的开源社区</p>
+                <div class="screenshot-container">
+                    <img src="./截图/a2a*402的github截图.png" alt="A2A x402 GitHub" class="screenshot">
+                </div>
+                <div class="two-col" style="margin-top: 30px;">
+                    <div class="case-study">
+                        <h4>📦 开源生态</h4>
+                        <p>Apache-2.0许可证,完全开放的协议规范</p>
+                        <p class="case-highlight">9位核心贡献者,持续更新迭代</p>
+                    </div>
+                    <div class="case-study">
+                        <h4>🎯 核心目标</h4>
+                        <p>Enable agent commerce - 让AI Agent成为商业服务</p>
+                        <p class="case-highlight">支持API调用、数据访问等链上付费服务</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11.6: Coinbase官方支持 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">COINBASE BACKING</div>
+                <h2>Coinbase全力推动</h2>
+                <p class="subtitle">Google Agentic Payments Protocol + x402: Agents Can Now Actually Pay Each Other</p>
+                <div class="screenshot-container">
+                    <img src="./截图/coinbase关于402的官网截图.png" alt="Coinbase x402官网" class="screenshot">
+                </div>
+                <p class="handwriting" style="font-size: 28px; text-align: center; margin-top: 30px; color: var(--accent);">
+                    Autonomous Agents with Google's AP2 and x402 - The Future is Here! 💫
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 12: PING -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label" style="margin-bottom: 8px;">SUCCESS CASE</div>
+                <h2 style="font-size: 32px; margin-bottom: 8px;">PING代币现象</h2>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 12px;">第一个通过x402协议铸造的代币 - 部署在Base链</p>
+                <div class="stats-row" style="gap: 20px; margin: 15px 0;">
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent); font-size: 48px;">8218%</div>
+                        <div class="stat-label" style="font-size: 12px;">交易量7天暴涨</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent); font-size: 48px;">$30M</div>
+                        <div class="stat-label" style="font-size: 12px;">峰值市值</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent); font-size: 48px;">163K</div>
+                        <div class="stat-label" style="font-size: 12px;">交易笔数</div>
+                    </div>
+                </div>
+                <div class="divider" style="margin: 15px 0;"></div>
+                <div class="two-col" style="gap: 20px;">
+                    <div class="emphasis-box" style="padding: 12px;">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">铸造方式</h3>
+                        <p style="font-size: 13px; margin: 0;">支付 $1 USDC 通过CLI随机获得5000 PING<br>类似铭文铸造,成本约$1</p>
+                    </div>
+                    <div class="emphasis-box" style="border-left-color: var(--accent); padding: 12px;">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">市场表现</h3>
+                        <p style="font-size: 13px; margin: 0;">24小时交易量 $20M+<br>新增地址 31,000+<br>早期投资者最高30倍回报</p>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 18px; text-align: center; margin-top: 18px; color: var(--accent);">
+                    证明了x402协议的实际可行性和市场潜力! 💎
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 13: Coinbase Timeline -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label" style="margin-bottom: 8px;">ECOSYSTEM</div>
+                <h2 style="font-size: 32px; margin-bottom: 15px;">Coinbase的推动</h2>
+                <div class="timeline" style="gap: 15px;">
+                    <div class="timeline-item">
+                        <div class="timeline-year" style="font-size: 40px;">Jan</div>
+                        <div class="timeline-content">
+                            <h4 style="font-size: 16px; margin-bottom: 6px;">x402协议发布</h4>
+                            <p style="font-size: 13px;">基于HTTP 402状态码,深度整合Coinbase Base链的加密支付标准</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year" style="font-size: 40px;">Sep</div>
+                        <div class="timeline-content">
+                            <h4 style="font-size: 16px; margin-bottom: 6px;">x402基金会成立</h4>
+                            <p style="font-size: 13px;">Coinbase联合Cloudflare等公司推动开放支付标准</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year" style="font-size: 40px;">Oct</div>
+                        <div class="timeline-content">
+                            <h4 style="font-size: 16px; margin-bottom: 6px;">Payments MCP上线</h4>
+                            <p style="font-size: 13px;">Coinbase发布Payments MCP,让AI Agent直接访问链上支付能力</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Payments MCP -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">BREAKTHROUGH</div>
+                <h2>Payments MCP</h2>
+                <p class="subtitle">让AI模型直接访问加密钱包和支付能力</p>
+                <div class="divider"></div>
+                <div class="two-col">
+                    <div>
+                        <h3 style="margin-bottom: 24px;">核心功能</h3>
+                        <ul style="margin: 0;">
+                            <li style="font-size: 20px;">仅需邮箱即可创建钱包,无需开发者设置</li>
+                            <li style="font-size: 20px;">可视化界面设置消费限额</li>
+                            <li style="font-size: 20px;">集成x402 Bazaar Explorer发现服务</li>
+                            <li style="font-size: 20px;">本地运行,保证速度和安全</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 24px;">支持的AI模型</h3>
+                        <div class="tag-list" style="margin: 0;">
+                            <span class="tag" style="font-size: 18px; padding: 16px 28px;">Claude</span>
+                            <span class="tag" style="font-size: 18px; padding: 16px 28px;">Gemini</span>
+                            <span class="tag" style="font-size: 18px; padding: 16px 28px;">Codex</span>
+                        </div>
+                        <div class="emphasis-box" style="margin-top: 40px;">
+                            <p class="handwriting" style="font-size: 26px; margin: 0;">
+                                让大语言模型真正进入全球经济! 🌍
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14.5: Coinbase Demo视频 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">LIVE DEMO</div>
+                <h2>Coinbase实战演示</h2>
+                <p class="subtitle">看看AI Agent如何真正使用x402进行支付</p>
+                <div class="video-container">
+                    <video controls autoplay muted loop>
+                        <source src="./截图/coinbase的demo视频.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p class="handwriting" style="font-size: 26px; text-align: center; margin-top: 30px; color: var(--accent);">
+                    从理论到实践 - AI支付触手可及! 🎬
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 14.6: 真实应用案例 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">REAL WORLD CASES</div>
+                <h2>真实应用案例</h2>
+                <p class="subtitle">AP2 & x402正在改变这些场景</p>
+
+                <div class="case-study" style="padding: 12px; margin: 10px 0;">
+                    <h4 style="font-size: 14px; margin-bottom: 6px;">📱 案例1: AI助手订餐</h4>
+                    <p style="font-size: 12px; margin-bottom: 4px;"><strong>场景:</strong> "Siri,帮我订一份午餐,预算50元,要健康的"</p>
+                    <p style="font-size: 12px; margin-bottom: 3px;"><strong>工作流程:</strong></p>
+                    <p style="font-size: 11px; margin-bottom: 3px;">① AI搜索附近餐厅 → ② 筛选符合条件的套餐 → ③ 展示给用户确认</p>
+                    <p style="font-size: 11px; margin-bottom: 3px;">④ 用户确认后,AI使用AP2三步授权完成支付</p>
+                    <p class="case-highlight" style="font-size: 12px; margin-top: 5px;">✨ 全程3分钟,无需打开任何App!</p>
+                </div>
+
+                <div class="case-study" style="padding: 12px; margin: 10px 0;">
+                    <h4 style="font-size: 14px; margin-bottom: 6px;">🤖 案例2: Agent间协作</h4>
+                    <p style="font-size: 12px; margin-bottom: 4px;"><strong>场景:</strong> 数据分析Agent向API服务Agent购买实时市场数据</p>
+                    <p style="font-size: 12px; margin-bottom: 3px;"><strong>工作流程:</strong></p>
+                    <p style="font-size: 11px; margin-bottom: 3px;">① A2A协议建立通信 → ② x402完成0.5 USDC微支付</p>
+                    <p style="font-size: 11px; margin-bottom: 3px;">③ 200毫秒获得数据 → ④ 自动生成分析报告</p>
+                    <p class="case-highlight" style="font-size: 12px; margin-top: 5px;">⚡ 无人工干预,24/7自主运行!</p>
+                </div>
+
+                <div class="case-study" style="padding: 12px; margin: 10px 0;">
+                    <h4 style="font-size: 14px; margin-bottom: 6px;">🎨 案例3: 创作者经济</h4>
+                    <p style="font-size: 12px; margin-bottom: 4px;"><strong>场景:</strong> AI设计师为客户生成Logo,客户满意后即时支付</p>
+                    <p style="font-size: 12px; margin-bottom: 3px;"><strong>创新点:</strong></p>
+                    <p style="font-size: 11px; margin-bottom: 2px;">• 按使用付费,每次生成0.1 USDC</p>
+                    <p style="font-size: 11px; margin-bottom: 2px;">• Mandates记录需求和交付物,永久可追溯</p>
+                    <p style="font-size: 11px; margin-bottom: 2px;">• 全球范围内,无银行账户限制</p>
+                    <p class="case-highlight" style="font-size: 12px; margin-top: 5px;">🌍 打破地域限制,真正的全球化!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14.7: AI数字劳动力案例 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">AI WORKFORCE</div>
+                <h2 style="font-size: 32px; margin-bottom: 10px;">真正的AI Agent数字劳动力</h2>
+                <p class="subtitle" style="font-size: 12px; margin-bottom: 12px;">按劳取酬,Agent自主接单赚钱</p>
+
+                <div class="case-study" style="padding: 10px; margin: 8px 0;">
+                    <h4 style="font-size: 13px; margin-bottom: 5px;">📚 学术研究领域</h4>
+                    <p style="font-size: 11px; margin-bottom: 3px;"><strong>场景:</strong> 研究Agent根据每次文档爬取的情况,自动向档案代理付费获取新数据</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 研究Agent自动评估数据价值,决定付费金额</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 档案Agent按需提供数据,实时收款</p>
+                    <p class="case-highlight" style="font-size: 11px; margin-top: 4px;">📊 Agent间形成数据交易市场!</p>
+                </div>
+
+                <div class="case-study" style="padding: 10px; margin: 8px 0;">
+                    <h4 style="font-size: 13px; margin-bottom: 5px;">🌐 翻译服务领域</h4>
+                    <p style="font-size: 11px; margin-bottom: 3px;"><strong>场景:</strong> 翻译Agent每完成一句话的翻译,符合标准后自动获得稳定币支付</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 质量检测Agent实时验证翻译准确度</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 符合用户预定标准立即触发x402支付</p>
+                    <p class="case-highlight" style="font-size: 11px; margin-top: 4px;">💰 按句计费,秒级结算!</p>
+                </div>
+
+                <div class="case-study" style="padding: 10px; margin: 8px 0;">
+                    <h4 style="font-size: 13px; margin-bottom: 5px;">🔒 代码/漏洞审查领域</h4>
+                    <p style="font-size: 11px; margin-bottom: 3px;"><strong>场景:</strong> 审查Agent每发现一个漏洞并上报,系统自动发送对应费用</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 按漏洞严重程度自动定价(高危/中危/低危)</p>
+                    <p style="font-size: 10px; margin-bottom: 2px;">• 审查Agent 24/7持续工作,发现问题即时获得奖励</p>
+                    <p class="case-highlight" style="font-size: 11px; margin-top: 4px;">🛡️ AI赏金猎人,保护代码安全!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Protocol Trinity -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">ARCHITECTURE</div>
+                <h2 style="font-size: 38px; margin-bottom: 12px;">AI Agent协议生态</h2>
+                <p class="subtitle" style="font-size: 14px; margin-bottom: 15px;">三大协议协同工作,构建完整的Agent经济基础设施</p>
+                <div class="diagram" style="margin: 20px 0;">
+                    <svg width="750" height="280" viewBox="0 0 900 350">
+                        <!-- MCP -->
+                        <circle cx="200" cy="150" r="80" fill="rgba(91,155,213,0.1)" stroke="#5b9bd5" stroke-width="3"/>
+                        <text x="200" y="140" text-anchor="middle" fill="#2c3e50" font-size="28" font-weight="700">MCP</text>
+                        <text x="200" y="165" text-anchor="middle" fill="#6b7280" font-size="14">Model Context Protocol</text>
+                        <text x="200" y="185" text-anchor="middle" fill="#6b7280" font-size="13">访问工具和API</text>
+
+                        <!-- A2A -->
+                        <circle cx="450" cy="150" r="80" fill="rgba(91,155,213,0.1)" stroke="#5b9bd5" stroke-width="3"/>
+                        <text x="450" y="140" text-anchor="middle" fill="#2c3e50" font-size="28" font-weight="700">A2A</text>
+                        <text x="450" y="165" text-anchor="middle" fill="#6b7280" font-size="14">Agent to Agent</text>
+                        <text x="450" y="185" text-anchor="middle" fill="#6b7280" font-size="13">Agent间协作</text>
+
+                        <!-- x402 -->
+                        <circle cx="700" cy="150" r="85" fill="rgba(91,155,213,0.2)" stroke="#5b9bd5" stroke-width="4"/>
+                        <text x="700" y="140" text-anchor="middle" fill="#5b9bd5" font-size="32" font-weight="700">x402</text>
+                        <text x="700" y="165" text-anchor="middle" fill="#6b7280" font-size="14">Payment Protocol</text>
+                        <text x="700" y="185" text-anchor="middle" fill="#2c3e50" font-size="13" font-weight="600">加密支付核心</text>
+
+                        <!-- Connections -->
+                        <line x1="280" y1="150" x2="370" y2="150" stroke="#6b7280" stroke-width="2" stroke-dasharray="8,4"/>
+                        <line x1="530" y1="150" x2="615" y2="150" stroke="#5b9bd5" stroke-width="3"/>
+
+                        <!-- Arrow -->
+                        <polygon points="615,150 605,145 605,155" fill="#5b9bd5"/>
+
+                        <!-- Annotation -->
+                        <text x="450" y="300" text-anchor="middle" fill="#5b9bd5" font-size="24" font-family="Caveat" font-weight="600">
+                            x402是AI Agent自主支付的最后一公里! 🎯
+                        </text>
+                    </svg>
+                </div>
+                <div class="emphasis-box" style="margin-top: 20px; padding: 12px;">
+                    <p style="font-size: 14px; margin: 0;">
+                        <strong>MCP</strong>让AI能用工具 → <strong>A2A</strong>让AI能协作 → <strong>x402</strong>让AI能支付
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Why Crypto -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">WHY CRYPTO</div>
+                <h2 style="font-size: 38px; margin-bottom: 15px;">为什么是加密货币?</h2>
+                <div class="feature-grid" style="gap: 15px; margin-top: 20px;">
+                    <div class="feature-item" style="padding: 16px;">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">无需许可</h3>
+                        <p style="font-size: 14px;">AI Agent无法建立传统金融机构关系</p>
+                    </div>
+                    <div class="feature-item" style="padding: 16px;">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">可编程</h3>
+                        <p style="font-size: 14px;">支付基于代码条件自动触发</p>
+                    </div>
+                    <div class="feature-item" style="padding: 16px;">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">24/7全球</h3>
+                        <p style="font-size: 14px;">不受银行营业时间和地理限制</p>
+                    </div>
+                    <div class="feature-item" style="padding: 16px;">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">微支付</h3>
+                        <p style="font-size: 14px;">亚分级交易经济可行</p>
+                    </div>
+                </div>
+                <p class="handwriting" style="font-size: 22px; text-align: center; margin-top: 30px; color: var(--accent);">
+                    只有区块链能赋予AI真正的经济自主权! ⚡
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 17: Conclusion -->
+        <div class="slide">
+            <div class="slide-content cover">
+                <h2 style="margin-bottom: 30px; color: var(--accent); font-size: 40px;">核心要点回顾</h2>
+                <div style="background: rgba(255,255,255,0.7); padding: 30px; border-radius: 16px; border: 3px solid var(--accent); margin-bottom: 20px;">
+                    <ul style="text-align: left; max-width: 800px; margin: 0 auto; padding-left: 30px;">
+                        <li style="font-size: 16px; margin-bottom: 12px;">✅ <strong>AP2</strong>通过三步"授权书"解决AI支付信任问题</li>
+                        <li style="font-size: 16px; margin-bottom: 12px;">⚡ <strong>x402</strong>实现200毫秒极速加密支付,零协议费</li>
+                        <li style="font-size: 16px; margin-bottom: 12px;">💎 <strong>PING代币</strong>7天交易量暴涨8218%,验证市场潜力</li>
+                        <li style="font-size: 16px; margin-bottom: 12px;">🏢 <strong>科技巨头</strong>全力推动:Google、Coinbase、Cloudflare</li>
+                        <li style="font-size: 16px; margin-bottom: 12px;">🌐 <strong>Payments MCP</strong>让Claude等AI模型直接访问链上支付</li>
+                        <li style="font-size: 16px;">🚀 <strong>Agent经济</strong>时代已经到来,不是未来!</li>
+                    </ul>
+                </div>
+                <p class="handwriting" style="font-size: 28px; color: var(--accent); margin: 20px 0;">
+                    The Future is Autonomous! 🚀
+                </p>
+                <div class="divider" style="margin: 30px 0;"></div>
+                <p class="subtitle" style="margin-top: 20px; font-size: 18px;">
+                    <strong>弗兰克的思维导图</strong><br>
+                    <span style="font-size: 15px; color: var(--text-secondary);">一起探索未来世界</span>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+            document.getElementById('progress').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                case 'PageDown':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'PageUp':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    currentSlide = 0;
+                    updateSlide();
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    currentSlide = totalSlides - 1;
+                    updateSlide();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+            }
+        });
+
+        // 触摸支持
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        });
+
+        // 滚轮支持
+        let scrollTimeout;
+        document.addEventListener('wheel', (e) => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                e.deltaY > 0 ? nextSlide() : prevSlide();
+            }, 150);
+        }, { passive: true });
+
+        // 全屏
+        function toggleFullscreen() {
+            const btn = document.getElementById('fullscreenBtn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 监听全屏状态变化，隐藏/显示按钮
+        document.addEventListener('fullscreenchange', function() {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
