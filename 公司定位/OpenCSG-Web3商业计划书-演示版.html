@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCSG - From World's #2 AI Platform to Agent Economy Leader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #faf8f3;
+            --text-primary: #2c3e50;
+            --text-secondary: #6b7280;
+            --accent: #5b9bd5;
+            --transition: cubic-bezier(0.4, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .presentation {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 1s var(--transition);
+            padding: 40px 60px;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 50px;
+            right: 70px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            z-index: 1000;
+        }
+
+        h1 {
+            font-size: 60px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        h2 {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 25px;
+            letter-spacing: -1.5px;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            letter-spacing: -0.3px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .big-text {
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .highlight-text {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .handwriting {
+            font-family: 'Caveat', cursive;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        ul li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .stat-block {
+            flex: 1;
+            border-top: 3px solid var(--accent);
+            padding-top: 15px;
+        }
+
+        .stat-number {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        .stat-label {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-item {
+            border-top: 3px solid var(--accent);
+            background: rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-item h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .feature-item p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .emphasis-box {
+            background: rgba(255, 255, 255, 0.7);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .emphasis-box p {
+            font-size: 17px;
+            color: var(--text-primary);
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .case-study {
+            background: rgba(255, 255, 255, 0.7);
+            border-left: 4px solid var(--accent);
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .case-study h4 {
+            font-size: 19px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .case-study p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .label {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            padding: 6px 16px;
+            background: rgba(91, 155, 213, 0.1);
+            border-radius: 16px;
+        }
+
+        .logo {
+            position: fixed;
+            top: 50px;
+            left: 70px;
+            font-size: 22px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 50px;
+            right: 140px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .cover {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        th {
+            background: rgba(91, 155, 213, 0.15);
+            font-weight: 600;
+            border-bottom: 2px solid rgba(91, 155, 213, 0.3);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(91, 155, 213, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">OpenCSG</div>
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+    <div class="progress-indicator" id="progress">1 / 18</div>
+
+    <div class="presentation">
+
+        <!-- Slide 1: Cover -->
+        <div class="slide active">
+            <div class="slide-content cover">
+                <h1 style="font-size: 52px; margin-bottom: 20px;">OpenCSG</h1>
+                <p class="subtitle" style="font-size: 22px; margin-bottom: 35px; color: var(--text-primary);">From the World's #2 AI Platform to Agent Economy Leader</p>
+                <p class="handwriting" style="font-size: 26px; margin-top: 25px; color: var(--accent);">
+                    3 Million developers. 200k+ models. Now powering the Agent Economy.
+                </p>
+                <div class="stats-row" style="margin-top: 60px;">
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">3 Million</div>
+                        <div class="stat-label">Global Users</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">200k+</div>
+                        <div class="stat-label">Models Hosted</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">✓</div>
+                        <div class="stat-label">Profitable</div>
+                    </div>
+                </div>
+                <p style="font-size: 16px; margin-top: 60px;">We're not a startup betting on agents.<br>We're the world's #2 AI platform adding agent infrastructure.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Journey -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">OUR JOURNEY</div>
+                <h2>From DevOps to AgenticOps</h2>
+                <p class="big-text">We've Done This Before <span class="highlight-text">(GitLab's Playbook)</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>The GitLab Story</h3>
+                        <ul>
+                            <li>2008: GitHub (centralized hosting)</li>
+                            <li>2012: GitLab (open-source + on-premise)</li>
+                            <li>2018: GitLab IPO ($15B peak)</li>
+                            <li>2021: HuggingFace (AI model hosting)</li>
+                            <li>2023: OpenCSG ("GitLab of AI Era")</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>What We've Built</h3>
+                        <div class="case-study">
+                            <h4>Year 1 (2023)</h4>
+                            <p>Launched CSGHub, open-source, first enterprise customers</p>
+                        </div>
+                        <div class="case-study">
+                            <h4>Year 2 (2024)</h4>
+                            <p>Wukong model (top 10), profitable, CCTV featured</p>
+                        </div>
+                        <div class="case-study">
+                            <h4>Year 3 (2025 - Now)</h4>
+                            <p>3 Million users ｜ 
+                                Sep: Google launches  A2Ax402 → Oct: We pivot to Agent Economy</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="emphasis-box">
+                    <p><strong>Our Thesis:</strong> AI platforms will evolve from HuggingFace → OpenCSG, just like DevOps evolved from GitHub → GitLab</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: x402 Opportunity -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">THE OPPORTUNITY</div>
+                <h2>September 2025: Google Made Agent Payments Real</h2>
+                <p class="big-text">The Game Just Changed - <span class="highlight-text">A2Ax402 Protocol</span></p>
+
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>What x402 Enables</h3>
+                        <p>AI agents discover each other (A2A + AgentCard)<br>
+                        AI agents pay each other ($0.0000001, 2-sec settlement)<br>
+                        AI agents become autonomous economic entities</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Market Response</h3>
+                        <p>1,000+ projects claiming "AI agent marketplace"<br>
+                        Billions in VC funding chasing it<br>
+                        But three critical problems remain unsolved</p>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 25px; color: var(--accent);">The Missing Pieces:</h3>
+                <div class="two-col">
+                    <div>
+                        <div class="emphasis-box">
+                            <p><strong>1. Trust:</strong> Which agent? 10 translation agents all claim 99% accuracy, no way to verify</p>
+                        </div>
+                        <div class="emphasis-box">
+                            <p><strong>2. Payments:</strong> x402 exists, but who made it work smoothly? (Sub-cent, high-frequency, silky UX)</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="emphasis-box">
+                            <p><strong>3. Scale:</strong> Where to run millions of agents? (Enterprise/gov infrastructure that's economically viable)</p>
+                        </div>
+                        <div style="background: rgba(91, 155, 213, 0.15); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p class="handwriting" style="font-size: 20px; margin: 0; color: var(--accent);">
+                                We're solving all three. And we have 3 Million users ready to use it.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Problem #1 - Trust -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">PROBLEM #1</div>
+                <h2>The Trust Crisis</h2>
+                <p class="big-text">Every Agent Claims to Be the Best. <span class="highlight-text">None Can Prove It.</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>The Scenario:</h3>
+                        <p>You're building an AI travel planner. It needs to call a translation agent.</p>
+                        <ul>
+                            <li>Agent A: "99.8% accuracy!" (says who?)</li>
+                            <li>Agent B: "Fastest in market!" (based on what?)</li>
+                            <li>Agent C: "Trusted by 10K users!" (can you verify?)</li>
+                        </ul>
+
+                        <h3 style="margin-top: 20px;">Traditional Solution Doesn't Work:</h3>
+                        <ul>
+                            <li>Centralized ratings → Can be faked</li>
+                            <li>API docs → Everyone writes "industry-leading"</li>
+                            <li>Trial and error → Costs money every test</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--accent);">Our Solution: AgentCard On-Chain</h3>
+                        <div class="emphasis-box">
+                            <p><strong>What Goes On-Chain:</strong></p>
+                            <ul style="margin-top: 10px;">
+                                <li>Agent capabilities (inputs/outputs)</li>
+                                <li>Performance metrics (response time, success rate)</li>
+                                <li>Real usage (total calls, revenue earned)</li>
+                                <li>User ratings (wallet addresses - can't fake)</li>
+                            </ul>
+                        </div>
+
+                        <div class="case-study">
+                            <h4>Real Example: Bug Bounty Hunter Agent</h4>
+                            <p>AgentCard shows: 147 bugs found, $890K earned, 4.8★<br>
+                            → New user sees this → <strong>Instant trust</strong> → Pays premium</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    If you can't trust agents, you can't build autonomous systems. This IS the foundation.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 5: Problem #2 - Payments -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">PROBLEM #2</div>
+                <h2>Everyone Talks x402, Nobody Made It Smooth</h2>
+                <p class="big-text">x402 Protocol is Brilliant. But <span class="highlight-text">Raw Protocol ≠ User Experience</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>What x402 DOESN'T Give You:</h3>
+                        <ul>
+                            <li>How to handle 0.0000001 USDC smoothly?</li>
+                            <li>What if user doesn't have exact token?</li>
+                            <li>How to batch 1000s of micro-tx without killing UX?</li>
+                        </ul>
+
+                        <div class="emphasis-box">
+                            <p><strong>The Reality:</strong> Most "x402 implementations" are demos. They work for 1 transaction. They break at scale.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--accent);">Our Solution: Silky-Smooth Micropayments</h3>
+                        <div style="background: rgba(91, 155, 213, 0.1); padding: 18px; border-radius: 10px; border: 2px solid var(--accent);">
+                            <p><strong>What We Built:</strong></p>
+                            <ul style="margin-top: 10px;">
+                                <li>Sub-cent precision: $0.0000001 with ZERO rounding errors</li>
+                                <li>Token abstraction: User holds $CSG, agent gets any token</li>
+                                <li>Batched settlements: 1,000 calls → 1 on-chain tx (99% gas savings)</li>
+                                <li>Instant UX: Never wait for blockchain confirmation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="case-study" style="background: rgba(91, 155, 213, 0.08); margin-top: 20px;">
+                    <h4>Real Example: Bug Bounty Hunter Agent</h4>
+                    <p>Scans code → Calls 50+ micro-agents (linters, fuzzers) @ $0.0001-$0.01 each<br>
+                    Total cost: $0.50/scan (vs $500/month SaaS)</p>
+                    <p><strong>Finds 1 bug → Earns $5,000 bounty → Net profit: $4,999.50</strong></p>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    This unlocks business models that were IMPOSSIBLE before.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Problem #3 - Scale -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">PROBLEM #3</div>
+                <h2>AI Needs Compute. Idle Compute is Wasted Money.</h2>
+                <p class="big-text">Governments Want AI Sovereignty. <span class="highlight-text">But They're Scared of the Bill.</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>The Brutal Reality:</h3>
+                        <ul>
+                            <li>1,000 GPUs × $30K = $30M upfront</li>
+                            <li>Utilization: 20-40% avg (enterprises don't run AI 24/7)</li>
+                            <li>Annual cost: $10M+ (power, cooling, maintenance)</li>
+                            <li><strong>CFO: "Burning $6M/year on idle GPUs?"</strong></li>
+                        </ul>
+
+                        <h3 style="margin-top: 20px; color: var(--accent);">Our Solution: Dual-Mode Compute</h3>
+                        <div class="emphasis-box">
+                            <p>GPU doesn't care if it's running AI or mining. <strong>Use both.</strong></p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="case-study">
+                            <h4>Daytime (8am-8pm): AI Sovereignty</h4>
+                            <p>Local enterprises use platform, data stays in-country<br>
+                            Government charges enterprises $X/hour</p>
+                        </div>
+                        <div class="case-study">
+                            <h4>Nighttime (8pm-8am): Mining</h4>
+                            <p>Auto-switch to mining (Filecoin, Render)<br>
+                            Earns crypto 24/7, gov keeps 80%, OpenCSG 20%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-row" style="margin-top: 30px;">
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: #d9534f;">-$7M/Year</div>
+                        <div class="stat-label">Traditional Model (30% utilization)</div>
+                    </div>
+                    <div style="font-size: 48px; color: var(--accent); display: flex; align-items: center;">→</div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: #5cb85c;">-$1M/Year</div>
+                        <div class="stat-label">OpenCSG Dual-Mode (90% utilization)</div>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    Turns "expensive national pride project" into "self-funding infrastructure"
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 7: Three Pillars Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">OUR SOLUTION</div>
+                <h2>The Three Pillars</h2>
+                <p class="big-text">We're Not Building "Another AI Platform". <span class="highlight-text">We're Building the Rails for the Agent Economy.</span></p>
+
+                <div class="case-study">
+                    <h4>PILLAR 1: TRUST (On-Chain AgentCards)</h4>
+                    <p>Problem: Can't verify agent quality → Solution: Immutable reputation on-chain → Impact: Agents become discoverable assets</p>
+                </div>
+
+                <div class="case-study">
+                    <h4>PILLAR 2: PAYMENTS (Smooth x402)</h4>
+                    <p>Problem: Micropayments don't work in practice → Solution: Sub-cent precision, high-frequency → Impact: Unlocks new business models</p>
+                </div>
+
+                <div class="case-study">
+                    <h4>PILLAR 3: SCALE (Dual-Mode Compute)</h4>
+                    <p>Problem: Idle compute = wasted money → Solution: AI when busy, mining when idle → Impact: Makes sovereign AI economically viable</p>
+                </div>
+
+                <div class="emphasis-box" style="background: rgba(91, 155, 213, 0.1); margin-top: 30px;">
+                    <h3 style="color: var(--accent);">The Flywheel:</h3>
+                    <p>AISovereign → Governments deploy → Local developers join → Build agents → Upload to marketplace (on-chain reputation) → Agents transact globally (smooth x402) → More transactions → Better reputation → Better agents → More government interest → Loop</p>
+                </div>
+
+                <p class="handwriting" style="font-size: 22px; text-align: center; margin-top: 25px; color: var(--accent);">
+                    Each pillar reinforces the others. This is not three products. It's ONE ecosystem.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Competition -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">COMPETITION</div>
+                <h2>Why We Win - Unique Position</h2>
+                <p class="subtitle">We're the only player checking all boxes</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Capability</th>
+                            <th style="background: rgba(91, 155, 213, 0.25);">OpenCSG</th>
+                            <th>HuggingFace</th>
+                            <th>Virtuals</th>
+                            <th>Google</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Users (millions)</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>3</strong></td>
+                            <td>8</td>
+                            <td><0.1</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>Enterprise customers</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>✅ 10+</strong></td>
+                            <td>❌</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Profitable</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>✅</strong></td>
+                            <td>~Break-even</td>
+                            <td>❌</td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>On-premise</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>✅</strong></td>
+                            <td>❌</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>Agent marketplace</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>Building</strong></td>
+                            <td>❌</td>
+                            <td>Limited</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>x402 payments + Web3</td>
+                            <td style="background: rgba(91, 155, 213, 0.1);"><strong>✅ Building</strong></td>
+                            <td>❌</td>
+                            <td>Partial</td>
+                            <td>Protocol only</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="two-col" style="margin-top: 25px;">
+                    <div class="emphasis-box">
+                        <p><strong>HuggingFace:</strong>8 Million users, $4.5B valuation, but NO agent marketplace, NO payments, NO enterprise on-premise, NO Web3 (too risky post-FTX)</p>
+                    </div>
+                    <div class="emphasis-box">
+                        <p><strong>Virtuals Protocol:</strong> Token economy for agents, but entertainment/meme agents only, ZERO enterprise customers, NO profitable business model</p>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    We're the only player with Users + Enterprise + Web3. All three.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 9: Token -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">TOKEN ECONOMICS</div>
+                <h2>Why Does This Need a Token?</h2>
+                <p class="big-text"><span class="highlight-text">Not Speculation. Infrastructure.</span></p>
+
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>Use Case 1: Quality Stake</h3>
+                        <p>To publish agent → Stake $1,000 in $CSG. Malicious? Slashed. Good? Refundable.<br><strong>Why token:</strong> Instant slashing, composable, global</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Use Case 2: Universal Payment</h3>
+                        <p>User holds $CSG only. Platform auto-swaps to whatever token agent wants.<br><strong>Why token:</strong> Instant swaps, 24/7 global, no forex fees</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Use Case 3: Value Capture</h3>
+                        <p>Platform holds 30% of $CSG. More agents → More demand → Token appreciates.<br><strong>Why token:</strong> Dual liquidity (Coinbase + NASDAQ)</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Token Supply</h3>
+                        <p>1B total (fixed). 20% Team (4yr vest), 30% Treasury, 25% Community Rewards, 15% Public, 10% Private</p>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    Team locked 4 years. 25% to developers. This is not pump and dump.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 10: GTM -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">GO-TO-MARKET</div>
+                <h2>Convert, Don't Acquire</h2>
+                <p class="big-text">Our GTM is Different: <span class="highlight-text">Convert Existing Users</span></p>
+
+                <div class="case-study">
+                    <h4>Phase 1 (Months 0-6): Convert Power Users</h4>
+                    <p><strong>Goal:</strong> First 1,000 agents from existing user base</p>
+                    <ul style="margin-top: 10px;">
+                        <li>Add "Agent Marketplace" tab to CSGHub</li>
+                        <li>One-click: Convert model → Agent (add x402 wrapper)</li>
+                        <li>Enterprise pilots: Unicom code review, Medical specialists</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>KPI:</strong> 1,000 agents live, $100K+ transactions</p>
+                </div>
+
+                <div class="case-study">
+                    <h4>Phase 2 (Months 6-12): First AISovereign</h4>
+                    <p><strong>Target:</strong> Singapore (highest probability), UAE, Malaysia</p>
+                    <p>Sales: Leverage Ministry case study, Demo Yichang model</p>
+                    <p style="margin-top: 10px;"><strong>KPI:</strong> 1 AISovereign LOI, 10K agents, 5 Millionusers</p>
+                </div>
+
+                <div class="case-study">
+                    <h4>Phase 3 (Months 12-18): Ecosystem Growth</h4>
+                    <p>Token launch, strategic partnerships, multiple AISovereign contracts<br>
+                    <strong>KPI:</strong> Clear market leadership in agent infrastructure</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: WHO WE ARE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">WHO WE ARE</div>
+                <h2>OpenCSG Today - The Numbers</h2>
+                <p class="big-text">We're Already the World's #2 AI Model Platform</p>
+
+                <div class="two-col">
+                    <div>
+                        <h3 style="color: var(--accent);">Platform Scale</h3>
+                        <ul>
+                            <li>3 Million+ users (2/3 overseas, 1/3 China)</li>
+                            <li>200k+ models hosted (Global #2, behind HuggingFace)</li>
+                            <li>~5,000 GitHub stars</li>
+                        </ul>
+
+                        <h3 style="margin-top: 25px; color: var(--accent);">Technical Leadership</h3>
+                        <ul>
+                            <li>sg-wukong-1b: Global #8, China #2</li>
+                            <li>SWEBench Lite: Global #2 (SOTA)</li>
+                            <li>CSGHub: "On-Premise HuggingFace"</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--accent);">Business Traction</h3>
+                        <ul>
+                            <li>Profitable since 2023, revenue doubling YoY</li>
+                            <li>10+ enterprise: Ministry, Unicom, banks</li>
+                            <li>Backed by: Lenovo Capital, National Info Center</li>
+                        </ul>
+
+                        <h3 style="margin-top: 25px; color: var(--accent);">Team</h3>
+                        <ul>
+                            <li>Founded by Chen Ran (Former CEO, GitLab China)</li>
+                            <li>Core team from GitLab China</li>
+                            <li>Featured on CCTV News</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 24px; text-align: center; margin-top: 30px;">
+                    We didn't come here to pitch a concept. We came to show you what we're building next.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 12: Unfair Advantage -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">UNFAIR ADVANTAGE</div>
+                <h2>We Already Have the Users</h2>
+                <p class="big-text">This is Not <span class="highlight-text">"Build It and They Will Come"</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>The Problem Most Startups Face:</h3>
+                        <ul>
+                            <li>Build agent marketplace → No users</li>
+                            <li>Build payment system → No transactions</li>
+                            <li>Build infrastructure → No customers</li>
+                        </ul>
+
+                        <div class="emphasis-box">
+                            <p><strong>The Key Insight:</strong><br>
+                            We don't need to <strong>acquire</strong> users.<br>
+                            We need to <strong>convert</strong> existing users.<br>
+                            <span class="highlight-text">Conversion is 10x easier than acquisition.</span></p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Our Position:</h3>
+                        <div class="stats-row" style="flex-direction: column; gap: 15px; margin: 0;">
+                            <div class="stat-block">
+                                <div class="stat-number" style="font-size: 44px; color: var(--accent);">3 Million</div>
+                                <div class="stat-label">Developers already using platform</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-number" style="font-size: 44px; color: var(--accent);">200k+</div>
+                                <div class="stat-label">Models = proven content ecosystem</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-number" style="font-size: 44px; color: var(--accent);">10+</div>
+                                <div class="stat-label">Paying enterprise customers</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 24px; text-align: center; margin-top: 25px; color: var(--accent);">
+                    Our customers are literally asking us for agent marketplace. We just need to execute the product.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 13: Team -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">THE TEAM</div>
+                <h2>We've Done This Before</h2>
+                <p class="big-text">We're Not First-Time Founders</p>
+
+                <div class="case-study" style="background: rgba(91, 155, 213, 0.1); padding: 22px;">
+                    <h4 style="font-size: 22px;">Chen Ran (陈冉), Founder & CEO</h4>
+                    <p style="font-size: 17px;">Former CEO of GitLab China (JiHu/极狐) → Led GitLab's China market entry → Built enterprise sales team (gov/SOE deals) → Deep understanding: Open-source business, DevOps→AgenticOps, China+Global markets<br>
+                    <strong>Why this matters:</strong> He built "Chinese GitLab." Now building "Agent Era GitLab."</p>
+                </div>
+
+                <div class="two-col" style="margin-top: 25px;">
+                    <div>
+                        <h3>Technical Achievements (2 Years)</h3>
+                        <ul>
+                            <li>Built CSGHub: 3 Million users, 200k+ models</li>
+                            <li>Built Wukong: Global top-10</li>
+                            <li>SWEBench Lite #2 globally (SOTA)</li>
+                        </ul>
+                        <p class="handwriting" style="font-size: 20px; margin-top: 15px; color: var(--accent);">We ship production systems, not demos.</p>
+                    </div>
+                    <div>
+                        <h3>Business Achievements</h3>
+                        <ul>
+                            <li>Profitable since 2023</li>
+                            <li>Revenue doubling YoY</li>
+                            <li>10+ enterprise (gov, banks, telcos)</li>
+                        </ul>
+                        <p class="handwriting" style="font-size: 20px; margin-top: 15px; color: var(--accent);">We know how to make money, not just raise VC.</p>
+                    </div>
+                </div>
+
+                <div class="emphasis-box" style="margin-top: 25px; background: rgba(91, 155, 213, 0.15);">
+                    <p style="font-size: 18px; text-align: center;"><strong>This is not a "promising team". This is a team that already built the #2 AI platform globally.</strong><br>
+                    We're not asking you to fund R&D. We're asking you to fund SCALE.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: IPO Path -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">EXIT STRATEGY</div>
+                <h2>Why NASDAQ Will Love Us</h2>
+                <p class="big-text">We're Not a "Crypto Company". <span class="highlight-text">We're AI Infrastructure with Crypto Assets.</span></p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>What They Did</th>
+                            <th>Market Cap</th>
+                            <th>Our Parallel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GitLab</strong></td>
+                            <td>DevOps platform</td>
+                            <td>$15B peak</td>
+                            <td>AgenticOps is to AI what they did for DevOps</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HuggingFace</strong></td>
+                            <td>AI model platform</td>
+                            <td>$4.5B</td>
+                            <td>We're 40% their scale in 25% the time</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Palantir</strong></td>
+                            <td>Gov AI</td>
+                            <td>$60B+</td>
+                            <td>We have similar gov customers (Ministry, etc)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Coinbase</strong></td>
+                            <td>Crypto exchange</td>
+                            <td>$85B peak</td>
+                            <td>Proves crypto companies CAN go public</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="emphasis-box" style="margin-top: 20px;">
+                    <h3>The MicroStrategy Model</h3>
+                    <p>Software company + Bitcoin holdings → Stock up 500%+ → $60B market cap (10x premium)<br>
+                    <strong>We'll do:</strong> AI infrastructure + 30% $CSG tokens → If token reaches $10 → $3B treasury → Multiple expansion</p>
+                </div>
+
+                <p class="handwriting" style="font-size: 20px; text-align: center; margin-top: 20px; color: var(--accent);">
+                    Dual liquidity: $CSG on Coinbase (Year 2) + OpenCSG stock on NASDAQ (Year 5)
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 15: 2030 Vision -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">2030 VISION</div>
+                <h2>What We're Really Building</h2>
+                <p class="big-text">This is Bigger Than a Company. <span class="highlight-text">It's Infrastructure for the Agent Economy.</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>Scenario 1: The Solo Developer</h3>
+                        <p>Developer in emerging market builds specialized agent → Lists on OpenCSG → Charges per-use via x402 → Agent called by other agents globally → <strong>Earns passive income 24/7</strong> (no sales effort)</p>
+
+                        <h3 style="margin-top: 20px;">Scenario 2: The Enterprise</h3>
+                        <p>Company wants automation → Instead of hiring team → Deploys agents from OpenCSG marketplace → <strong>Significantly reduces operational costs</strong></p>
+                    </div>
+                    <div>
+                        <h3>Scenario 3: The Government</h3>
+                        <p>Country wants AI sovereignty but concerned about costs → Deploys AISovereign → Runs national AI services → Dual-mode compute offsets costs → <strong>Achieves AI independence with manageable economics</strong></p>
+
+                        <div class="emphasis-box">
+                            <p><strong>The World We Enable:</strong><br>
+                            Every company becomes "AI company"<br>
+                            Every developer can monetize AI<br>
+                            Every country can have AI sovereignty</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="handwriting" style="font-size: 26px; text-align: center; margin-top: 30px; color: var(--accent);">
+                    Just like App Store put software creation in everyone's hands,<br>OpenCSG puts AI agent creation in everyone's hands.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 16: The Ask -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">THE ASK</div>
+                <h2>Funding Strategy</h2>
+                <p class="big-text">Growth Round, <span class="highlight-text">Not Seed</span></p>
+
+                <div class="two-col">
+                    <div>
+                        <h3>What We're Raising</h3>
+                        <div class="stat-block">
+                            <div class="stat-number" style="color: var(--accent);">$50-80M</div>
+                            <div class="stat-label">for 5-7% equity</div>
+                        </div>
+                        <div class="stat-block" style="margin-top: 20px;">
+                            <div class="stat-number" style="color: var(--accent);">$1-1.2B</div>
+                            <div class="stat-label">Pre-money valuation</div>
+                        </div>
+
+                        <div class="emphasis-box" style="margin-top: 20px;">
+                            <p><strong>Valuation Logic:</strong> HuggingFace $4.5B with8 Million users = $562/user<br>
+                            OpenCSG: 3 Million × $562 = $1.68B<br>
+                            30% discount (earlier, China) = <strong>$1-1.2B</strong></p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Use of Funds (18-24 Month)</h3>
+                        <ul>
+                            <li>$20M: Agent Marketplace (x402, on-chain reputation)</li>
+                            <li>$15M: AISovereign Sales (gov sales team, SE Asia)</li>
+                            <li>$15M: International Expansion (US/EU, partnerships)</li>
+                            <li>$12M: Token Launch (legal, liquidity)</li>
+                            <li>$10M: Product & R&D</li>
+                            <li>$8-18M: Reserve</li>
+                        </ul>
+
+                        <div class="case-study" style="margin-top: 15px;">
+                            <h4>Month 18 Milestone</h4>
+                            <p>First AISovereign deployed, 50K agents live, clear category leadership, Series B ready ($200M+ at $3-5B)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Why Now -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">WHY NOW</div>
+                <h2>This is Not a Bet on "If". It's a Bet on "Who".</h2>
+
+                <div class="two-col">
+                    <div>
+                        <h3 style="color: var(--accent);">The "If" Questions Are Answered:</h3>
+                        <ul>
+                            <li>Will agent economy happen?<br><strong>✅ Yes.</strong> Google, Coinbase, Ethereum Foundation committed (x402)</li>
+                            <li>Will developers build agents?<br><strong>✅ Yes.</strong> We already have agent-like systems deployed</li>
+                            <li>Will enterprises pay for agents?<br><strong>✅ Yes.</strong> Our customers are asking for marketplace</li>
+                            <li>Will governments buy sovereign AI?<br><strong>✅ Yes.</strong> We already sold to Ministry of Industry</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--accent);">The Only Question: "Who Will Win?"</h3>
+                        <div class="emphasis-box">
+                            <p><strong>Not HuggingFace:</strong> Won't pivot to Web3 (too risky)</p>
+                            <p><strong>Not Virtuals:</strong> No enterprise (pure speculation)</p>
+                            <p><strong>Not Google:</strong> Infrastructure, not platform</p>
+                            <p style="margin-top: 15px;"><strong>It Will Be OpenCSG Because:</strong></p>
+                            <ul style="margin-top: 10px;">
+                                <li>✅ We already have the users (3 Million)</li>
+                                <li>✅ We already have the customers (10+)</li>
+                                <li>✅ We already have the tech (CSGHub)</li>
+                                <li>✅ We already have the team (GitLab veterans)</li>
+                                <li>✅ We're already profitable</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="emphasis-box" style="margin-top: 25px; background: rgba(91, 155, 213, 0.15);">
+                    <h3 style="text-align: center;">The Window is 12-18 Months</h3>
+                    <p style="text-align: center;">After that: Google might build their own marketplace, Microsoft might copy us, competitor might raise $500M<br>
+                    <strong>But right now:</strong> x402 is brand new, market fragmented, governments writing checks<br>
+                    <span class="handwriting" style="font-size: 24px; color: var(--accent);">This is the iPhone App Store moment of the agent economy.</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Investment Thesis -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="label">INVESTMENT THESIS</div>
+                <h2>What You're Buying</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-item" style="background: rgba(91, 155, 213, 0.08);">
+                        <h3>Proven Platform</h3>
+                        <p>3 Million users, 200k models<br>Not a concept, already working</p>
+                    </div>
+                    <div class="feature-item" style="background: rgba(91, 155, 213, 0.08);">
+                        <h3>Proven Team</h3>
+                        <p>GitLab veterans<br>Did this before successfully</p>
+                    </div>
+                    <div class="feature-item" style="background: rgba(91, 155, 213, 0.08);">
+                        <h3>Proven Business</h3>
+                        <p>Profitable, enterprise customers<br>Real revenue model</p>
+                    </div>
+                    <div class="feature-item" style="background: rgba(91, 155, 213, 0.08);">
+                        <h3>+ Agent Economy Exposure</h3>
+                        <p>x402, on-chain reputation, AISovereign<br>New growth vector</p>
+                    </div>
+                </div>
+
+                <div class="stats-row" style="margin-top: 30px;">
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">3-5x</div>
+                        <div class="stat-label">Series B (18 months)<br>$3-5B valuation</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">10-20x</div>
+                        <div class="stat-label">IPO (Year 4-5)<br>$10-20B market cap</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number" style="color: var(--accent);">+3-5x</div>
+                        <div class="stat-label">Token upside<br>If $CSG reaches top-20</div>
+                    </div>
+                </div>
+
+                <div class="emphasis-box" style="background: rgba(91, 155, 213, 0.15); margin-top: 25px;">
+                    <p style="font-size: 19px; text-align: center;">
+                        <strong>You don't need to believe in miracles.</strong><br>
+                        You just need to believe in momentum:<br>
+                        ✅ We went 0 → 3 Million users in 2 years<br>
+                        ✅ We went 0 → profitable in 2 years<br>
+                        ✅ We went 0 → #2 platform globally in 2 years<br>
+                        <span class="highlight-text">The question is not "Can they build it?" We already did. Can they do it again, for agents?</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Closing -->
+        <div class="slide">
+            <div class="slide-content cover">
+                <h2 style="margin-bottom: 30px; color: var(--accent);">Let's Build the Agent Economy Together</h2>
+
+                <div style="background: rgba(255,255,255,0.8); padding: 40px; border-radius: 20px; border: 3px solid var(--accent); margin-bottom: 30px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);">
+                    <p style="font-size: 22px; margin-bottom: 20px; color: var(--text-primary); font-weight: 500;">
+                        <strong>We're not asking you to believe in a vision.</strong><br>
+                        We're asking you to scale a proven platform.
+                    </p>
+                    <ul style="text-align: left; max-width: 800px; margin: 25px auto; padding-left: 35px;">
+                        <li style="font-size: 18px; margin-bottom: 12px; line-height: 1.6;">2 years ago: We said we'd build on-premise HuggingFace</li>
+                        <li style="font-size: 18px; margin-bottom: 12px; line-height: 1.6;">Today: We're #2 platform globally with 3 Million users</li>
+                        <li style="font-size: 18px; line-height: 1.6;">2 years from now: We'll be the dominant agent economy platform</li>
+                    </ul>
+                </div>
+
+                <p class="handwriting" style="font-size: 38px; color: var(--accent); margin: 30px 0;">
+                    We've done this before (GitLab China).<br>
+                    We're doing it again (OpenCSG).<br>
+                    Now we're doing it for agents. 🚀
+                </p>
+
+                <div style="width: 100%; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); margin: 35px 0; opacity: 0.3;"></div>
+
+                <p style="font-size: 20px; color: var(--text-primary); margin-bottom: 15px;">
+                    <strong>OpenCSG (开放传神)</strong>
+                </p>
+                <p style="font-size: 17px; color: var(--text-secondary); margin-bottom: 10px;">
+                    opencsg.com | contact@opencsg.com
+                </p>
+                <p style="font-size: 15px; color: var(--text-secondary);">
+                    GitHub: github.com/OpenCSG | Community: 3 Million+ developers
+                </p>
+
+                <p style="font-size: 24px; margin-top: 40px; color: var(--accent); font-weight: 600;">
+                    "We're not predicting the agent economy.<br>We're already building it with 3 Million developers."
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+            document.getElementById('progress').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                case 'PageDown':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'PageUp':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    currentSlide = 0;
+                    updateSlide();
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    currentSlide = totalSlides - 1;
+                    updateSlide();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+            }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        });
+
+        let scrollTimeout;
+        document.addEventListener('wheel', (e) => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                e.deltaY > 0 ? nextSlide() : prevSlide();
+            }, 150);
+        }, { passive: true });
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', function() {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'flex';
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
