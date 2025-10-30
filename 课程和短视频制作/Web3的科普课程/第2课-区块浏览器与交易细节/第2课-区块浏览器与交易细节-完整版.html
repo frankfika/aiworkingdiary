@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第2课 - 区块浏览器与交易细节</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-lighter: #1a1a1a;
+            --accent: #00d9ff;
+            --accent-glow: rgba(0, 217, 255, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --error-color: #ff4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            padding: 30px 50px;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1200px;
+            transform: scale(0.95);
+            max-height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--accent), #00ffaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 38px;
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-item {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 25px;
+            margin: 25px 0;
+            justify-content: center;
+        }
+
+        .stat-card {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px 30px;
+            text-align: center;
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 25px 0;
+        }
+
+        .screenshot {
+            max-width: 85%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .highlight-box {
+            background: rgba(0, 217, 255, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: rgba(255, 68, 68, 0.1);
+            border-left: 4px solid var(--error-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .success-box {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid var(--success-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        ul li:before {
+            content: "▸";
+            color: var(--accent);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-lighter);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fullscreen-btn:hover {
+            background: #00ffaa;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .code-block {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+            color: var(--success-color);
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .status-failed {
+            background: rgba(255, 68, 68, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .status-pending {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .checklist {
+            background: var(--bg-lighter);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-icon {
+            color: var(--accent);
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-lighter);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 40px; }
+            h2 { font-size: 28px; }
+            .feature-grid, .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Slide 1: 标题与课程回顾 -->
+    <div class="slide active">
+        <div class="slide-content">
+            <h1>第2课：区块浏览器与交易细节</h1>
+            <p class="subtitle">从理论到实战 - 学会验证、分析和排错</p>
+
+            <div class="highlight-box">
+                <h3>第1课核心回顾</h3>
+                <ul>
+                    <li>签名改变状态 - Web3的核心原则</li>
+                    <li>交易四要素：from / to / value / data</li>
+                    <li>状态 vs 事件 - 真相 vs 日志</li>
+                    <li>Gas机制与nonce序列</li>
+                </ul>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">核心技能</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">17</div>
+                    <div class="stat-label">实战页面</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">90</div>
+                    <div class="stat-label">分钟深度学习</div>
+                </div>
+            </div>
+
+            <div class="warning-box" style="font-size: 14px;">
+                <strong>⚠️ 重要提示：</strong>本课程所有演示使用测试网(Sepolia)，不涉及真实资金
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: 什么是区块浏览器 -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2>什么是区块浏览器</h2>
+            <p class="subtitle">区块链世界的"搜索引擎"与"真相来源"</p>
+
+            <div class="two-col">
+                <div>
+                    <h3>📊 核心功能</h3>
+                    <ul>
+                        <li>查询交易详情 - 完整生命周期</li>
+                        <li>查看地址信息 - 余额与历史</li>
+                        <li>浏览区块数据 - 网络状态</li>
+                        <li>验证合约代码 - 安全审查</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>🔗 主要浏览器</h3>
+                    <ul>
+                        <li>Etherscan - 以太坊首选</li>
+                        <li>BaseScan - Base链官方</li>
+                        <li>Arbiscan - Arbitrum L2</li>
+                        <li>Polygonscan - Polygon侧链</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 25px;">
+                <h3>💡 为什么重要？</h3>
+                <p>在Web3中，你不能盲目信任任何人的说法。项目方说"交易成功"，钱包显示"已完成"，你都需要自己去区块浏览器验证。<strong>链上记录即真相，无法篡改，无法抵赖。</strong></p>
+            </div>
+
+            <div class="warning-box" style="font-size: 13px;">
+                <strong>🔒 安全提醒：</strong>只使用官方浏览器，不要点击搜索引擎的广告链接（可能是钓鱼网站）
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: 交易哈希与基础信息 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.9);">
+            <h2>交易哈希与基础信息</h2>
+            <p class="subtitle">学会查询交易，读懂第一屏的关键字段</p>
+
+            <div class="feature-grid" style="gap: 15px; margin: 20px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">🔑</div>
+                    <h3>Transaction Hash</h3>
+                    <p>64字符唯一标识符，交易的"身份证"</p>
+                    <div class="code-block" style="font-size: 11px;">0x1234...abcdef</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <h3>Status (状态)</h3>
+                    <p>
+                        <span class="status-badge status-success">Success</span>
+                        <span class="status-badge status-failed">Failed</span>
+                        <span class="status-badge status-pending">Pending</span>
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📦</div>
+                    <h3>Block & Timestamp</h3>
+                    <p>区块高度与打包时间，确认交易位置</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">👤</div>
+                    <h3>From / To / Value</h3>
+                    <p>发送者 / 接收者 / ETH金额</p>
+                </div>
+            </div>
+
+            <div class="warning-box" style="margin-top: 20px; font-size: 14px;">
+                <h3 style="font-size: 16px; margin-bottom: 8px;">⚠️ 关键误区</h3>
+                <p><strong>Value = 0 不代表没有转账！</strong></p>
+                <p>如果转的是ERC-20代币(如USDC)，Value显示为0 ETH，但代币转移记录在data字段和事件日志中。不要被表面数据误导！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: 深入交易字段 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>深入交易字段：from/to/value/data</h2>
+            <p class="subtitle">掌握核心字段，看懂Input Data的秘密</p>
+
+            <div class="feature-grid" style="gap: 15px; margin: 15px 0;">
+                <div class="feature-item">
+                    <h3>📊 Nonce (交易序号)</h3>
+                    <p>从0开始的计数器，保证交易顺序，防止重放攻击</p>
+                </div>
+                <div class="feature-item">
+                    <h3>⛽ Gas Limit / Used</h3>
+                    <p>预算上限 vs 实际消耗<br><span style="color: var(--warning-color);">Used = Limit 可能Gas不够</span></p>
+                </div>
+                <div class="feature-item">
+                    <h3>💰 Base Fee + Priority Fee</h3>
+                    <p>基础费(销毁) + 优先费(给验证者)</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📝 Input Data (关键！)</h3>
+                    <p>合约调用的函数和参数，必须看懂！</p>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 15px;">
+                <h3 style="font-size: 18px;">Input Data 解析示例</h3>
+                <div class="code-block" style="font-size: 12px;">
+Function: transfer(address _to, uint256 _value)<br>
+MethodID: 0xa9059cbb<br>
+[0] _to: 0x1234567890abcdef...<br>
+[1] _value: 1000000000000000000 (1 代币)
+                </div>
+                <p style="font-size: 13px; margin-top: 10px;">前4字节是<strong>函数选择器</strong>，后面是<strong>ABI编码的参数</strong>。Etherscan会自动解析为人类可读格式。</p>
+            </div>
+
+            <div class="warning-box" style="font-size: 13px; margin-top: 15px;">
+                <strong>🚨 安全警示：</strong>签名前务必理解你在调用什么函数！<br>
+                特别警惕：<code>approve</code>、<code>setApprovalForAll</code>、<code>transferFrom</code> - 这些可能授权或转移你的资产
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Internal Transactions -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.9);">
+            <h2>状态改变：Internal Transactions</h2>
+            <p class="subtitle">追踪真实资金流向，看穿合约黑盒</p>
+
+            <div class="highlight-box">
+                <h3>什么是内部交易？</h3>
+                <p>当智能合约调用其他合约或转账时，这些<strong>合约发起的子操作</strong>就是内部交易。它们不需要单独签名，Gas已包含在主交易中。</p>
+            </div>
+
+            <div style="text-align: center; margin: 25px 0;">
+                <h3 style="margin-bottom: 15px;">Uniswap Swap 资金流向示例</h3>
+                <div class="code-block" style="text-align: left; font-size: 13px;">
+主交易: 你 → Uniswap Router (Value: 0)<br>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+Internal Txns:<br>
+  1. Router → USDC合约 (划走你的USDC)<br>
+  2. Router → 流动性池 (执行兑换)<br>
+  3. 流动性池 → Router (返回ETH)<br>
+  4. Router → 你 (最终收到0.5 ETH)
+                </div>
+            </div>
+
+            <div class="stats-row" style="margin: 20px 0;">
+                <div class="stat-card">
+                    <div class="feature-icon">💰</div>
+                    <div class="stat-label">主交易 Value</div>
+                    <div class="stat-number" style="font-size: 28px;">0 ETH</div>
+                </div>
+                <div class="stat-card">
+                    <div class="feature-icon">✨</div>
+                    <div class="stat-label">内部交易实际收到</div>
+                    <div class="stat-number" style="font-size: 28px; color: var(--success-color);">0.5 ETH</div>
+                </div>
+            </div>
+
+            <div class="warning-box" style="font-size: 13px;">
+                <strong>🔍 审计要点：</strong>隐藏的手续费、后门转账都可能在Internal Txns中暴露。复杂DeFi操作后，务必查看内部交易！
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Event Logs详解 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>事件日志：Event Logs详解</h2>
+            <p class="subtitle">读懂事件，区分日志与状态</p>
+
+            <div class="two-col" style="gap: 20px; margin: 15px 0;">
+                <div>
+                    <h3>📋 事件结构</h3>
+                    <ul style="font-size: 14px;">
+                        <li><strong>Address</strong> - 发出事件的合约</li>
+                        <li><strong>Name</strong> - 事件名称</li>
+                        <li><strong>Topics</strong> - 索引参数(可检索)</li>
+                        <li><strong>Data</strong> - 非索引参数</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>🔔 常见事件</h3>
+                    <ul style="font-size: 14px;">
+                        <li><strong>Transfer</strong> - 代币转账</li>
+                        <li><strong>Approval</strong> - 授权记录</li>
+                        <li><strong>Swap</strong> - 兑换操作</li>
+                        <li><strong>Mint/Burn</strong> - 铸造/销毁</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 15px;">
+                <h3 style="font-size: 17px;">Transfer 事件解析</h3>
+                <div class="code-block" style="font-size: 11px;">
+event Transfer(address indexed from, address indexed to, uint256 value)<br><br>
+Topics:<br>
+  [0]: 0xddf252ad... (事件签名哈希)<br>
+  [1]: 0x1111... (from地址 - indexed)<br>
+  [2]: 0x3333... (to地址 - indexed)<br>
+Data:<br>
+  value: 100000000 (转账金额 - 非indexed)
+                </div>
+            </div>
+
+            <div class="warning-box" style="font-size: 13px; margin-top: 15px;">
+                <h3 style="font-size: 15px; margin-bottom: 8px;">⚠️ 事件 ≠ 状态</h3>
+                <p><strong>事件是日志，状态是真相！</strong></p>
+                <p>恶意合约可能发出虚假事件（如显示"你收到了1000代币"），但实际状态并未改变。<br>
+                验证关键数据时，务必回读合约状态（如<code>balanceOf</code>），不能只看事件！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Gas费用详解 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>Gas费用详解：估算与优化</h2>
+            <p class="subtitle">掌握EIP-1559机制，学会优化成本</p>
+
+            <div class="highlight-box" style="margin-bottom: 20px;">
+                <h3 style="font-size: 18px;">💰 Gas费用计算公式</h3>
+                <div class="code-block" style="font-size: 14px;">
+Total Fee = Gas Used × (Base Fee + Priority Fee)<br><br>
+Base Fee: 网络动态调整，会被销毁<br>
+Priority Fee: 你给验证者的小费，影响打包速度
+                </div>
+            </div>
+
+            <div class="feature-grid" style="gap: 15px; margin: 15px 0;">
+                <div class="feature-item">
+                    <h3>📊 Gas Limit</h3>
+                    <p>你设置的预算上限<br><span style="color: var(--warning-color);">过低会失败，过高不影响实际费用</span></p>
+                </div>
+                <div class="feature-item">
+                    <h3>⚡ Gas Used</h3>
+                    <p>实际消耗量<br><span style="color: var(--success-color);">简单转账≈21,000</span></p>
+                </div>
+                <div class="feature-item">
+                    <h3>🔥 Base Fee</h3>
+                    <p>网络决定，自动调整<br>每区块最多变化12.5%</p>
+                </div>
+                <div class="feature-item">
+                    <h3>💸 Priority Fee</h3>
+                    <p>你的小费设置<br>高费用→快打包</p>
+                </div>
+            </div>
+
+            <div class="two-col" style="gap: 20px; margin-top: 20px;">
+                <div class="success-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 8px;">✅ 优化策略</h3>
+                    <ul style="font-size: 13px;">
+                        <li>等低峰时段(周末/深夜UTC)</li>
+                        <li>使用Layer 2(费用低几十倍)</li>
+                        <li>批量操作减少固定成本</li>
+                        <li>合理设置Priority Fee</li>
+                    </ul>
+                </div>
+                <div class="warning-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 8px;">⚠️ Gas War警示</h3>
+                    <p>Otherside土地销售案例：<br>
+                    • Gas飙升8000+ Gwei<br>
+                    • 单笔费用数千美元<br>
+                    • 失败也扣Gas<br>
+                    <strong>教训：不要盲目参与</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Success vs Failed -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>交易状态：Success vs Failed</h2>
+            <p class="subtitle">区分成功与失败，学会读取错误信息</p>
+
+            <div class="stats-row" style="margin: 20px 0;">
+                <div class="stat-card" style="border-color: var(--success-color);">
+                    <div class="status-badge status-success" style="font-size: 16px;">Success ✓</div>
+                    <div class="stat-label" style="margin-top: 10px;">状态已改变<br>资金已转移</div>
+                </div>
+                <div class="stat-card" style="border-color: var(--error-color);">
+                    <div class="status-badge status-failed" style="font-size: 16px;">Failed ✗</div>
+                    <div class="stat-label" style="margin-top: 10px;">状态回滚<br>Gas照扣</div>
+                </div>
+                <div class="stat-card" style="border-color: var(--warning-color);">
+                    <div class="status-badge status-pending" style="font-size: 16px;">Pending ⏱</div>
+                    <div class="stat-label" style="margin-top: 10px;">等待打包<br>尚未上链</div>
+                </div>
+            </div>
+
+            <div class="feature-grid" style="gap: 15px; margin: 15px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">⛽</div>
+                    <h3>Out of Gas</h3>
+                    <p>Gas Limit不够，执行到一半停止</p>
+                    <p style="color: var(--success-color); font-size: 13px;">解决：提高Gas Limit</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💸</div>
+                    <h3>余额不足</h3>
+                    <p>transfer amount exceeds balance</p>
+                    <p style="color: var(--success-color); font-size: 13px;">解决：检查余额</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3>未授权</h3>
+                    <p>transfer amount exceeds allowance</p>
+                    <p style="color: var(--success-color); font-size: 13px;">解决：先approve授权</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📉</div>
+                    <h3>滑点保护</h3>
+                    <p>INSUFFICIENT_OUTPUT_AMOUNT</p>
+                    <p style="color: var(--success-color); font-size: 13px;">解决：放宽滑点或等待</p>
+                </div>
+            </div>
+
+            <div class="warning-box" style="font-size: 14px; margin-top: 15px;">
+                <strong>⚠️ 重要：</strong>失败的交易，Gas费不可退还！<br>
+                发送前务必检查：余额、授权、Gas Limit、滑点设置
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: 区块确认与最终性 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.9);">
+            <h2>区块确认与最终性</h2>
+            <p class="subtitle">理解确认数的意义，知道何时算"安全"</p>
+
+            <div class="highlight-box">
+                <h3>📊 确认数计算</h3>
+                <div class="code-block">
+Confirmations = 当前区块高度 - 交易所在区块<br><br>
+示例：交易在区块 12345678，当前区块 12345693<br>
+确认数 = 15 个确认
+                </div>
+                <p style="margin-top: 10px; font-size: 14px;">确认越多，区块被重组的概率越低，交易越<strong>不可逆</strong></p>
+            </div>
+
+            <div style="margin: 25px 0;">
+                <h3 style="margin-bottom: 15px;">不同场景的确认要求</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>场景</th>
+                            <th>确认数</th>
+                            <th>等待时间</th>
+                            <th>风险权衡</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>小额支付</td>
+                            <td>1-2</td>
+                            <td>~12-24秒</td>
+                            <td>快速，风险极低</td>
+                        </tr>
+                        <tr>
+                            <td>中等金额</td>
+                            <td>5-10</td>
+                            <td>~1-2分钟</td>
+                            <td>DApp默认要求</td>
+                        </tr>
+                        <tr>
+                            <td>大额交易</td>
+                            <td>等待Finalized</td>
+                            <td>~12-15分钟</td>
+                            <td>2 epochs，最安全</td>
+                        </tr>
+                        <tr>
+                            <td>交易所充值</td>
+                            <td>20-50</td>
+                            <td>~4-10分钟</td>
+                            <td>机构级安全要求</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="warning-box" style="font-size: 13px;">
+                <strong>🌉 跨链桥特殊等待：</strong><br>
+                • Optimistic Rollup (Arbitrum/Optimism): 7天挑战期<br>
+                • ZK Rollup (zkSync): 数小时等待ZK证明生成
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: 实战排错 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.86);">
+            <h2>定位失败原因：实战排错</h2>
+            <p class="subtitle">掌握完整排错流程，成为"链上侦探"</p>
+
+            <div class="checklist">
+                <h3 style="margin-bottom: 15px; color: var(--accent);">🔍 排错清单 (按顺序检查)</h3>
+                <div class="checklist-item">
+                    <span class="checklist-icon">1️⃣</span>
+                    <span>查看 <strong>Status</strong> 错误信息 - 最直接的失败原因</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">2️⃣</span>
+                    <span>检查 <strong>Gas Used vs Gas Limit</strong> - 是否 Out of Gas</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">3️⃣</span>
+                    <span>查看 <strong>Event Logs</strong> - 执行到哪一步，发出了哪些事件</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">4️⃣</span>
+                    <span>查看 <strong>Internal Txns</strong> - 哪个子调用失败了</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">5️⃣</span>
+                    <span>分析 <strong>Input Data</strong> - 调用了什么函数，参数是否合理</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">6️⃣</span>
+                    <span>查询 <strong>合约状态</strong> - 余额、授权、权限是否满足</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">7️⃣</span>
+                    <span>参考 <strong>社区讨论</strong> - 其他人是否遇到类似问题</span>
+                </div>
+            </div>
+
+            <div class="two-col" style="gap: 20px; margin-top: 20px;">
+                <div>
+                    <h3 style="font-size: 17px; margin-bottom: 10px;">🛠️ 推荐工具</h3>
+                    <ul style="font-size: 13px;">
+                        <li><strong>Tenderly</strong> - 重放交易，逐步调试</li>
+                        <li><strong>Blocknative</strong> - 发送前模拟</li>
+                        <li><strong>Revoke.cash</strong> - 检查授权</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="font-size: 17px; margin-bottom: 10px;">📝 常见案例</h3>
+                    <ul style="font-size: 13px;">
+                        <li>未授权 → 先approve再操作</li>
+                        <li>Gas不够 → 提高Gas Limit</li>
+                        <li>滑点失败 → 放宽滑点或等待</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-box" style="font-size: 13px; margin-top: 15px;">
+                <strong>💡 实践建议：</strong>不要盲目重试！先排查根因，再发送交易。使用模拟工具可以避免不必要的Gas损失。
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: 网络状态 -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2>区块时间与网络状态</h2>
+            <p class="subtitle">学会查看网络状态，根据拥堵情况做决策</p>
+
+            <div class="stats-row" style="margin: 25px 0;">
+                <div class="stat-card">
+                    <div class="stat-number">12秒</div>
+                    <div class="stat-label">以太坊PoS区块时间</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">~15分钟</div>
+                    <div class="stat-label">Finalized (2 epochs)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12.5%</div>
+                    <div class="stat-label">Base Fee最大单区块变化</div>
+                </div>
+            </div>
+
+            <div class="feature-grid" style="gap: 20px; margin: 25px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">⛽</div>
+                    <h3>Gas Tracker</h3>
+                    <p><strong>Low</strong> - 不着急，等几分钟</p>
+                    <p><strong>Average</strong> - 1-2分钟打包</p>
+                    <p><strong>High</strong> - 几乎立即打包</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>拥堵判断</h3>
+                    <p>• Pending Txns数量</p>
+                    <p>• 区块Gas使用率</p>
+                    <p>• Base Fee变化趋势</p>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 20px;">
+                <h3>💡 优化策略</h3>
+                <ul>
+                    <li>观察24小时Gas趋势，选择低峰时段</li>
+                    <li>周末和深夜(UTC)通常更便宜</li>
+                    <li>避开重大事件(NFT发售、DeFi挖矿)</li>
+                    <li>高频操作考虑Layer 2 (费用低几十倍)</li>
+                </ul>
+            </div>
+
+            <div class="warning-box" style="font-size: 14px;">
+                <strong>⚠️ 极端拥堵警示：</strong>Gas War时，评估"Gas成本+操作成本"的总价值是否合理。不要盲目参与！
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: 实战演示 -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2>实战演示：查看真实交易</h2>
+            <p class="subtitle">完整演示一笔交易的分析流程</p>
+
+            <div class="checklist">
+                <h3 style="margin-bottom: 15px; color: var(--accent);">🎯 完整分析流程</h3>
+                <div class="checklist-item">
+                    <span class="checklist-icon">1️⃣</span>
+                    <span>输入交易哈希，打开 Sepolia Etherscan</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">2️⃣</span>
+                    <span>查看概览：Status / Block / Timestamp / From / To / Value</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">3️⃣</span>
+                    <span>解析 Input Data：调用了什么函数，参数是什么</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">4️⃣</span>
+                    <span>查看 Event Logs：验证Transfer事件，确认金额和接收者</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">5️⃣</span>
+                    <span>查看 Internal Txns：追踪复杂操作的资金流向</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">6️⃣</span>
+                    <span>检查 Gas费用：Used vs Limit，费用是否合理</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">7️⃣</span>
+                    <span>验证最终状态：查询接收地址余额，确认代币到账</span>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 25px;">
+                <h3>✅ 分析总结</h3>
+                <p>通过这7个步骤，你可以：</p>
+                <ul>
+                    <li>独立验证任何交易，不依赖钱包或第三方提示</li>
+                    <li>发现隐藏的资金流动和异常操作</li>
+                    <li>理解复杂DeFi协议的实际运作方式</li>
+                    <li>识别可疑交易和安全风险</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: 工具推荐 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>工具推荐：Etherscan之外</h2>
+            <p class="subtitle">了解辅助工具，选择适合自己的工具组合</p>
+
+            <div class="feature-grid" style="gap: 15px; margin: 20px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Tenderly</h3>
+                    <p>交易模拟与调试，失败交易重放，逐步查看状态变化</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⛽</div>
+                    <h3>Blocknative</h3>
+                    <p>实时Gas预测，Mempool监控，交易通知推送</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Revoke.cash</h3>
+                    <p>查看和撤销授权，支持多链，风险提示</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💼</div>
+                    <h3>DeBank / Zapper</h3>
+                    <p>多链资产管理，DeFi头寸追踪，友好界面</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>Dune Analytics</h3>
+                    <p>链上数据分析，SQL查询，社区仪表板</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h3>EigenPhi</h3>
+                    <p>MEV分析，三明治攻击检测，交易可视化</p>
+                </div>
+            </div>
+
+            <div class="two-col" style="gap: 25px; margin-top: 25px;">
+                <div class="success-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 10px;">👤 普通用户组合</h3>
+                    <p><strong>Etherscan</strong> + <strong>Revoke.cash</strong></p>
+                    <p>查交易 + 管理授权，已足够日常使用</p>
+                </div>
+                <div class="highlight-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 10px;">👨‍💻 开发者组合</h3>
+                    <p><strong>Tenderly</strong> + <strong>Dune</strong> + <strong>Etherscan</strong></p>
+                    <p>调试 + 数据分析 + 基础查询</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-secondary);">
+                <p><strong>💡 核心原则：</strong>工具只是辅助，理解原理最重要！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: 多链环境 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.9);">
+            <h2>多链环境：不同浏览器的使用</h2>
+            <p class="subtitle">掌握多链浏览器，理解跨链差异</p>
+
+            <div style="margin: 20px 0;">
+                <h3 style="margin-bottom: 15px;">主要区块链浏览器</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>区块链</th>
+                            <th>浏览器</th>
+                            <th>Gas代币</th>
+                            <th>区块时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>以太坊主网</td>
+                            <td>etherscan.io</td>
+                            <td>ETH</td>
+                            <td>~12秒</td>
+                        </tr>
+                        <tr>
+                            <td>Sepolia测试网</td>
+                            <td>sepolia.etherscan.io</td>
+                            <td>SepoliaETH</td>
+                            <td>~12秒</td>
+                        </tr>
+                        <tr>
+                            <td>Arbitrum</td>
+                            <td>arbiscan.io</td>
+                            <td>ETH</td>
+                            <td>~0.25秒</td>
+                        </tr>
+                        <tr>
+                            <td>Base</td>
+                            <td>basescan.org</td>
+                            <td>ETH</td>
+                            <td>~2秒</td>
+                        </tr>
+                        <tr>
+                            <td>Polygon</td>
+                            <td>polygonscan.com</td>
+                            <td>MATIC</td>
+                            <td>~2秒</td>
+                        </tr>
+                        <tr>
+                            <td>BSC</td>
+                            <td>bscscan.com</td>
+                            <td>BNB</td>
+                            <td>~3秒</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="warning-box" style="margin-top: 20px; font-size: 14px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">⚠️ 重要注意事项</h3>
+                <ul>
+                    <li><strong>链ID要匹配</strong> - 以太坊的交易在BSC浏览器查不到</li>
+                    <li><strong>同一地址在不同链上独立</strong> - 资产互不影响</li>
+                    <li><strong>跨链桥操作要两边验证</strong> - L1和L2都要检查</li>
+                    <li><strong>Gas机制可能不同</strong> - 代币、费用、确认时间各异</li>
+                </ul>
+            </div>
+
+            <div class="success-box" style="font-size: 13px; margin-top: 15px;">
+                <strong>💡 实践建议：</strong>学会Etherscan，其他浏览器基本无师自通，因为它们都参考了Etherscan的设计
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 15: 安全实践 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.86);">
+            <h2>安全实践：识别可疑交易</h2>
+            <p class="subtitle">建立安全检查清单，学会识别恶意交易</p>
+
+            <div class="feature-grid" style="gap: 15px; margin: 15px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>未预期的Approval</h3>
+                    <p>授权了陌生合约？额度是多少？立即检查并撤销</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚫</div>
+                    <h3>未验证的合约</h3>
+                    <p>无法查看代码，极度危险！避免交互</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💸</div>
+                    <h3>异常Gas消耗</h3>
+                    <p>简单操作Gas过高？可能有恶意逻辑</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Internal Txns异常</h3>
+                    <p>意外转账到未知地址？隐藏手续费或后门</p>
+                </div>
+            </div>
+
+            <div class="warning-box" style="margin-top: 15px; font-size: 13px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">🔥 真实案例警示</h3>
+                <p><strong>钓鱼授权攻击：</strong></p>
+                <p>用户点击"领取空投"按钮，签署了Approval交易，授权陌生合约无限额度操作USDC。<br>
+                数分钟后，合约调用transferFrom，转走所有USDC。</p>
+                <p style="margin-top: 10px;"><strong>教训：</strong>每次Approval前，必须明确知道授权给谁、授权多少！</p>
+            </div>
+
+            <div class="checklist" style="margin-top: 15px;">
+                <h3 style="margin-bottom: 12px; color: var(--accent);">✅ 签名前三问</h3>
+                <div class="checklist-item">
+                    <span class="checklist-icon">❓</span>
+                    <span>这会改变什么状态？(转账/授权/铸造...)</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">❓</span>
+                    <span>授权给谁？额度多少？(特别警惕无限授权)</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="checklist-icon">❓</span>
+                    <span>我真的同意这个操作吗？(不懂就不签)</span>
+                </div>
+            </div>
+
+            <div class="success-box" style="font-size: 13px; margin-top: 15px;">
+                <strong>🛡️ 防护工具：</strong>MetaMask交易模拟、Pocket Universe、Fire、Wallet Guard等安全插件可在签名前分析风险
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 16: 课程总结 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.88);">
+            <h2>课程总结与关键点回顾</h2>
+            <p class="subtitle">巩固核心知识点，形成系统化技能图谱</p>
+
+            <div class="two-col" style="gap: 20px; margin: 20px 0;">
+                <div>
+                    <div class="highlight-box" style="font-size: 13px;">
+                        <h3 style="font-size: 16px; margin-bottom: 10px;">🎯 核心技能</h3>
+                        <ul style="font-size: 13px;">
+                            <li>查询和验证任何交易</li>
+                            <li>读懂所有交易字段</li>
+                            <li>定位失败交易原因</li>
+                            <li>估算合理Gas费用</li>
+                            <li>识别可疑恶意交易</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="success-box" style="font-size: 13px;">
+                        <h3 style="font-size: 16px; margin-bottom: 10px;">🔑 核心原则</h3>
+                        <ul style="font-size: 13px;">
+                            <li>验证比信任重要</li>
+                            <li>状态是真相，事件是日志</li>
+                            <li>Value=0不等于安全</li>
+                            <li>失败也扣Gas</li>
+                            <li>确认越多越稳</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin: 25px 0;">
+                <h3 style="margin-bottom: 15px; text-align: center;">知识体系图谱</h3>
+                <div class="feature-grid" style="gap: 15px;">
+                    <div class="feature-item">
+                        <h3>📊 交易分析</h3>
+                        <p style="font-size: 13px;">Hash/Status/From/To/Value/Data/Nonce/Gas</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>🔍 深度追踪</h3>
+                        <p style="font-size: 13px;">Input Data/Internal Txns/Event Logs/状态查询</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>⛽ Gas优化</h3>
+                        <p style="font-size: 13px;">Base Fee/Priority Fee/低峰时段/Layer 2</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>🛡️ 安全识别</h3>
+                        <p style="font-size: 13px;">授权检查/合约验证/异常信号/工具辅助</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 20px; text-align: center;">
+                <h3 style="font-size: 18px; margin-bottom: 10px;">💡 下节课预告</h3>
+                <p>智能合约深度分析 | 读懂代码 | 识别漏洞 | DeFi协议拆解</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px; font-size: 16px; color: var(--accent);">
+                <strong>"在Web3中，验证比信任更重要"</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 17: 课后作业 -->
+    <div class="slide">
+        <div class="slide-content" style="transform: scale(0.9);">
+            <h2>课后作业</h2>
+            <p class="subtitle">通过实践巩固技能，养成查看和验证的习惯</p>
+
+            <div class="feature-grid" style="gap: 20px; margin: 25px 0;">
+                <div class="feature-item">
+                    <div class="feature-icon">✅</div>
+                    <h3>作业1：分析成功交易</h3>
+                    <p style="font-size: 14px;">在Sepolia测试网发送ERC-20转账，记录：</p>
+                    <ul style="font-size: 13px;">
+                        <li>Transaction Hash</li>
+                        <li>Input Data解析</li>
+                        <li>Event Logs信息</li>
+                        <li>Gas费用分析</li>
+                    </ul>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">❌</div>
+                    <h3>作业2：定位失败交易</h3>
+                    <p style="font-size: 14px;">故意制造失败(如余额不足)，分析：</p>
+                    <ul style="font-size: 13px;">
+                        <li>Status错误信息</li>
+                        <li>失败原因</li>
+                        <li>解决方案</li>
+                        <li>Gas扣除情况</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 20px;">
+                <h3>🔒 作业3：审查授权 (可选进阶)</h3>
+                <p>访问 revoke.cash，连接测试网钱包：</p>
+                <ul>
+                    <li>查看授权列表</li>
+                    <li>记录授权的合约和额度</li>
+                    <li>识别不必要的授权并撤销</li>
+                </ul>
+            </div>
+
+            <div class="two-col" style="gap: 20px; margin-top: 25px;">
+                <div class="success-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 8px;">📝 提交要求</h3>
+                    <ul style="font-size: 13px;">
+                        <li>截图(标注关键字段)</li>
+                        <li>文字描述(3-5句话)</li>
+                        <li>不含敏感信息</li>
+                    </ul>
+                </div>
+                <div class="warning-box" style="font-size: 13px;">
+                    <h3 style="font-size: 15px; margin-bottom: 8px;">⚠️ 注意事项</h3>
+                    <ul style="font-size: 13px;">
+                        <li>仅使用测试网</li>
+                        <li>独立完成</li>
+                        <li>思考比答案重要</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px; font-size: 15px; color: var(--text-secondary);">
+                <p><strong>📚 学习资源：</strong></p>
+                <p>Etherscan文档 | Ethereum.org | EIP-1559 | ERC-20标准</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <button id="fullscreenBtn" class="fullscreen-btn" onclick="toggleFullscreen()">⛶ 全屏</button>
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">17</span>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFullscreen();
+            } else if (e.key === 'Escape' && document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        });
+
+        // Hide fullscreen button when in fullscreen mode
+        document.addEventListener('fullscreenchange', function() {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        });
+
+        // Click navigation (right half = next, left half = prev)
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                const clickX = e.clientX;
+                const windowWidth = window.innerWidth;
+
+                if (clickX > windowWidth / 2) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextSlide();
+            }
+            if (touchEndX > touchStartX + 50) {
+                prevSlide();
+            }
+        }
+    </script>
+</body>
+</html>
